@@ -5,7 +5,8 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <sstream>
 #include <boost/archive/binary_iarchive.hpp>
-#include "../Messages/Message.h"
+#include "../Messages/msg.h"
+
 
 template <typename T>
 std::string Serialize(const T* msg) {

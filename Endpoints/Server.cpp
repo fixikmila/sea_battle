@@ -1,13 +1,13 @@
-#include <boost/lockfree/queue.hpp>
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 #include <iostream>
 #include <boost/asio.hpp>
 
-#include "../Messages/msg.h"
+#include "../Messages/msg_export.h"
 #include "../Utils/Config.h"
 #include "../Utils/ThreadSafeQueue.h"
 #include "../Utils/Serialization.h"
+#include "../Logic/ServerLogic.h"
 
 volatile bool isWorking;
 volatile bool isFailed;
@@ -47,23 +47,20 @@ void TrnWorker()
         isPopped = qtrn.try_pop(msg);
         if (isPopped)
         {
-            if (msg->Type <= 4 && msg->Type >= 0)
+            msg->AddressFrom = std::pair<std::string, unsigned short>(lendp.address().to_string(), lendp.port());
+            auto message = Serialize<Messages::Message>(msg);
+            if (msg->AddressTo.second == 0)
             {
-                msg->AddressFrom = std::pair<std::string, unsigned short>(lendp.address().to_string(), lendp.port());
-                auto message = Serialize<Messages::Message>(msg);
-                if (msg->AddressTo.second == 0)
+                for (int i = CLIENT_PORT_RANGE_START; i <= CLIENT_PORT_RANGE_END; i++)
                 {
-                    for (int i = CLIENT_PORT_RANGE_START; i <= CLIENT_PORT_RANGE_END; i++)
-                    {
-                        boost::asio::ip::udp::endpoint broadcast_endpoint(boost::asio::ip::address_v4::broadcast(), i);
-                        s_->send_to(boost::asio::buffer(message), broadcast_endpoint);
-                    }
+                    boost::asio::ip::udp::endpoint broadcast_endpoint(boost::asio::ip::address_v4::broadcast(), i);
+                    s_->send_to(boost::asio::buffer(message), broadcast_endpoint);
                 }
-                else
-                {
-                    auto rendp = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(msg->AddressTo.first), msg->AddressTo.second);
-                    s_->send_to(boost::asio::buffer(message), rendp);
-                }
+            }
+            else
+            {
+                auto rendp = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(msg->AddressTo.first), msg->AddressTo.second);
+                s_->send_to(boost::asio::buffer(message), rendp);
             }
         }
     }
@@ -153,10 +150,7 @@ int main()
                     break;
             }
         }
-        else
-        {
-            //boost::this_thread::sleep_for(boost::chrono::milliseconds(SRV_RELAX_INTERVAL));
-        }
+
 
         // cleanup
         auto ts = boost::chrono::system_clock::now();

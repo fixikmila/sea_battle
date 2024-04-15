@@ -10,13 +10,14 @@ find_package(GLEW REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLFW REQUIRED glfw3)
-add_compile_options(-lglew)
 
 file(GLOB_RECURSE messagesFiles "Messages/*.h" "Messages/*.cpp")
-file(GLOB_RECURSE utilFiles "Utils/*.h" "Utils/*cpp")
+file(GLOB_RECURSE utilFiles "Utils/*.h" "Utils/*.cpp")
+file(GLOB_RECURSE netFiles "Networking/*.h" "Networking/*.cpp")
+file(GLOB_RECURSE logicFiles "Logic/*.h" "Logic/*.cpp")
 
-add_executable(server Endpoints/Server.cpp ${messagesFiles} ${utilFiles})
-add_executable(client Endpoints/Client.cpp ${messagesFiles} ${utilFiles})
+add_executable(server Endpoints/Server.cpp ${messagesFiles} ${utilFiles} ${netFiles})
+add_executable(client Endpoints/Client.cpp ${messagesFiles} ${utilFiles} ${netFiles} ${logicFiles})
 add_executable(test Endpoints/ser_test.cpp ${messagesFiles} ${utilFiles})
 
 target_include_directories(server PRIVATE

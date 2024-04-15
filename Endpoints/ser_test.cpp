@@ -4,6 +4,7 @@
 #include <memory>
 #include <iostream>
 #include "../Messages/msg.h"
+#include "../Messages/msg_export.h"
 
 int main() {
     // Create a ServerAliveBroadcastMessage object

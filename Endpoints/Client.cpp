@@ -4,14 +4,18 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
-#include <boost/thread.hpp>
 #include <iostream>
 #include <boost/asio.hpp>
 
-#include "../Messages/msg.h"
+#include "../Messages/msg_export.h"
+#include "../Networking/Agent.h"
 #include "../Utils/Config.h"
-#include "../Utils/ThreadSafeQueue.h"
-#include "../Utils/Serialization.h"
+#include "../Logic/ClientLogic.h"
+#include <chrono>
+#include <sys/timeb.h>
+#include <ctime>
+#include <thread>
+#include "cstdlib"
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 // Window dimensions
@@ -59,88 +63,11 @@ GLfloat x=0;
 GLfloat y=0;
 GLfloat z=0;
 
-volatile bool isWorking;
-volatile bool isFailed;
-volatile int PORT;
-
-boost::asio::ip::udp::socket* s_;
-
-ThreadSafeQueue<Messages::Message*> qrec{};
-ThreadSafeQueue<Messages::Message*> qtrn{};
-
-void RecWorker()
-{
-    while (isWorking)
-    {
-        std::string recvbuf(1024, '\0');
-        boost::asio::ip::udp::endpoint sender_endpoint;
-        size_t bytes_recv = s_->receive_from(boost::asio::buffer(recvbuf), sender_endpoint);
-        recvbuf.resize(bytes_recv);
-        auto msg = Deserialize<Messages::Message>(recvbuf);
-        if (msg)
-        {
-            msg->AddressFrom = std::pair<std::string, unsigned short>(sender_endpoint.address().to_string(), sender_endpoint.port());
-            qrec.push(msg);
-        }
-    }
-}
-
-void TrnWorker()
-{
-    Messages::Message* msg;
-    bool isPopped;
-    auto lendp = s_->local_endpoint();
-
-    while (isWorking)
-    {
-        isPopped = qtrn.try_pop(msg);
-        if (isPopped)
-        {
-            msg->AddressFrom = std::pair<std::string, unsigned short>(lendp.address().to_string(), lendp.port());
-            auto message = Serialize<Messages::Message>(msg);
-            auto rendp = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(msg->AddressTo.first), msg->AddressTo.second);
-            s_->send_to(boost::asio::buffer(message), rendp);
-
-        }
-
-    }
-}
-
 int main()
 {
     // INIT
-    isWorking = true;
-    std::cout << "[LOG] Starting client" << std::endl;
-
-    boost::asio::io_context io_context;
-    PORT = 0;
-    for (int i = CLIENT_PORT_RANGE_START; i <= CLIENT_PORT_RANGE_END; i++)
-    {
-        try
-        {
-            boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address_v4::any(), i);
-            s_ = new boost::asio::ip::udp::socket(io_context, endpoint);
-            s_->set_option(boost::asio::ip::udp::socket::broadcast(true));
-            PORT = i;
-            break;
-        }
-        catch (const boost::system::system_error& e)
-        {
-            continue;
-        }
-    }
-    if (PORT == 0)
-    {
-        std::cout << "[ERR] Error while binding socket" << std::endl;
-        return 1;
-    }
-    std::cout << "[LOG] CLient acquired port " << s_->local_endpoint().port() << std::endl;
-
-    boost::thread recw(RecWorker);
-    boost::thread trnw(TrnWorker);
-    std::cout << "[LOG] Receive/Transmit workers started" << std::endl;
-
-
+    ClientLogic client;
+    auto ns = std::chrono::high_resolution_clock::now();
         std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
         // Init GLFW
         glfwInit();
@@ -223,48 +150,28 @@ int main()
         z=0;
 
     // MAIN PART HERE
-    std::pair<std::string, unsigned short> srvaddr;
-    bool isSrvFound = false;
+
     std::map<std::pair<std::string, unsigned short>, std::vector<GLfloat>> data = {};
     std::cout << "[LOG] Starting message dispatch loop.." << std::endl;
-    Messages::Message* msg;
-    bool isPopped;
-    while (!glfwWindowShouldClose(window) && isWorking && !isFailed)
+    long lastTime =  std::chrono::duration_cast<std::chrono::nanoseconds>
+            (std::chrono::system_clock::now().time_since_epoch()).count();
+    double nsPerTick = 1000000000/60.0f;
+
+    int ticks = 0;
+    double delta = 0;
+    while (!glfwWindowShouldClose(window) && client.isGood())
     {
-        isPopped = qrec.try_pop(msg);
-        if (isPopped)
-        {
-            switch (msg->Type)
-            {
-                case Messages::ServerAliveBroadcast:
-                    {
-                        srvaddr = msg->AddressFrom;
-                        isSrvFound = true;
-                    }
-                    break;
-                case Messages::ClientDataPropagation:
-                    {
-                        auto cd_msg = dynamic_cast<Messages::ClientDataPropagationMessage*>(msg);
-                        data.erase(cd_msg->Id);
-                        data.insert(std::pair<std::pair<std::string, unsigned short>, std::vector<GLfloat>>(cd_msg->Id, cd_msg->Data));
-                    }
-                    break;
-                case Messages::ClientRemoval:
-                    {
-                        auto cd_msg = dynamic_cast<Messages::ClientRemovalMessage*>(msg);
-                        data.erase(cd_msg->Id);
-                    }
-                    break;
-                default:
-                    break;
-            }
-            delete msg;
-        }
-        if (isSrvFound)
-        {
-            auto d_msg = new Messages::ClientDataMessage(std::vector<GLfloat>{x - GLfloat(0.1), y - GLfloat (0.1), z});
-            d_msg->AddressTo = srvaddr;
-            qtrn.push(d_msg);
+        ns = std::chrono::high_resolution_clock::now();
+        //Get time in nano seconds
+        long now = std::chrono::duration_cast<std::chrono::nanoseconds>
+                (std::chrono::system_clock::now().time_since_epoch()).count();
+        delta += (now-lastTime)/nsPerTick;
+        lastTime = now;
+
+        while (delta >= 1){
+            ticks++;
+            client.DispatchMessage(data, x, y, z);
+            delta--;
         }
 
         glfwPollEvents();
@@ -290,6 +197,7 @@ int main()
             glEnableVertexAttribArray(0);
             glUseProgram(shaderProgram1);
             glDrawArrays(GL_TRIANGLES, 0, 3);
+            break;
         }
 
         glBindVertexArray(0);
@@ -301,9 +209,7 @@ int main()
     glfwTerminate();
 
     // OUTRO
-    recw.join();
-    trnw.join();
-    s_->close();
+
     std::cout << "[LOG] exiting" << std::endl;
     return 0;
 }
