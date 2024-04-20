@@ -15,7 +15,8 @@ namespace Messages {
         ServerAliveBroadcast = 1,
         ClientData = 2,
         ClientDataPropagation = 3,
-        ClientRemoval = 4
+        ClientRemoval = 4,
+        Hello = 5
     };
 
     class Message {

@@ -11,16 +11,16 @@
 #include <vector>
 #include <map>
 #include <string>
+
 #include "../Utils/Config.h"
 #include "../Messages/msg.h"
 #include "../Networking/Agent.h"
+
 class ClientLogic {
 private:
     Agent *agent;
     std::pair<std::string, unsigned short> srvaddr;
     bool isSrvFound = false;
-    Messages::Message* msg;
-    bool isPopped;
 public:
     ClientLogic();
     bool isGood();

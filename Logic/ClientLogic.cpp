@@ -4,7 +4,9 @@
 
 #include "ClientLogic.h"
 #include <iostream>
-ClientLogic::ClientLogic() {
+
+ClientLogic::ClientLogic()
+{
     agent = new Agent();
     bool s = agent->start(CLIENT_PORT_RANGE_START, CLIENT_PORT_RANGE_END);
     if (!s)
@@ -13,19 +15,24 @@ ClientLogic::ClientLogic() {
         //return 1;
     }
 }
-bool ClientLogic::isGood(){
+bool ClientLogic::isGood()
+{
     return agent->isWorking && !agent->isFailed;
 }
-void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, std::vector<GLfloat>>&data, GLfloat x, GLfloat y, GLfloat z){
+
+void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, std::vector<GLfloat>>&data, GLfloat x, GLfloat y, GLfloat z)
+{
+    Messages::Message* msg;
     msg = agent->getMessage();
     if (msg)
     {
         switch (msg->Type)
         {
-            case Messages::ServerAliveBroadcast:
+            case Messages::Hello:
             {
                 srvaddr = msg->AddressFrom;
                 isSrvFound = true;
+                std::cout << "Server was found!" << std::endl;
             }
                 break;
             case Messages::ClientDataPropagation:
@@ -51,6 +58,15 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
         auto d_msg = new Messages::ClientDataMessage(std::vector<GLfloat>{x - GLfloat(0.1), y - GLfloat(0.1), z});
         d_msg->AddressTo = srvaddr;
         agent->sendMessage(d_msg);
+    }
+    else
+    {
+        for (int i = SRV_PORT_RANGE_START; i <= SRV_PORT_RANGE_END; i++)
+        {
+            auto hmsg = new Messages::HelloMessage(i);
+            hmsg->AddressTo = std::pair<std::string, unsigned short>(SRV_ADDR, i);
+            agent->sendMessage(hmsg);
+        }
     }
 }
 ClientLogic::~ClientLogic(){

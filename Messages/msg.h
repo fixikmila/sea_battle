@@ -12,7 +12,6 @@
 #include "MessageTypes/ClientDataPropagationMessage.h"
 #include "MessageTypes/ServerAliveBroadcastMessage.h"
 #include "MessageTypes/ClientRemovalMessage.h"
-
-
+#include "MessageTypes/HelloMessage.h"
 
 #endif //SHIPS_MSG_H

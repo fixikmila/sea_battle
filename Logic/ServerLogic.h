@@ -12,6 +12,14 @@
 #include "../Networking/Agent.h"
 
 class ServerLogic {
+private:
+    Agent *agent;
+public:
+    ServerLogic();
+    ~ServerLogic();
+    bool isGood();
+    void DispatchMessage(std::map<std::pair<std::string, unsigned short>, boost::chrono::system_clock::time_point>& timestamps);
+
     //ServerLogic();
     //void DispatchMessage();
     //~ServerLogic();

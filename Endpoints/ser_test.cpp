@@ -1,44 +1,68 @@
 #include <sstream>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-#include <memory>
 #include <iostream>
-#include "../Messages/msg.h"
 #include "../Messages/msg_export.h"
 
-int main() {
-    // Create a ServerAliveBroadcastMessage object
-    auto* msg = new Messages::ServerAliveBroadcastMessage(45);
-
-    // Cast the ServerAliveBroadcastMessage object to a Message object
+bool HelloTest()
+{
+    bool f = true;
+    auto* msg = new Messages::HelloMessage(42);
     Messages::Message* base_msg = msg;
-
-    // Serialize the Message object
     std::ostringstream oss;
     {
         boost::archive::binary_oarchive oa(oss);
         oa << base_msg;
     }
     std::string serialized_data = oss.str();
-
-    // Deserialize the Message object
     std::istringstream iss(serialized_data);
     Messages::Message* deserialized_msg = nullptr;
     {
         boost::archive::binary_iarchive ia(iss);
         ia >> deserialized_msg;
     }
-
-    // Check the deserialized object
-    if (auto* r = dynamic_cast<Messages::ServerAliveBroadcastMessage*>(deserialized_msg)) {
-        std::cout << "SrvUid: " << r->SrvUid << std::endl;
+    if (auto* r = dynamic_cast<Messages::HelloMessage*>(deserialized_msg)) {
+        std::cout << "Hello id: " << r->Id << std::endl;
     } else {
-        std::cout << "Failed to cast to ServerAliveBroadcastMessage" << std::endl;
+        std::cout << "HelloMessage test failed" << std::endl;
+        f = false;
     }
-
-    // Clean up the deserialized object
     delete deserialized_msg;
     delete msg;
+    return f;
+}
+bool ClientDataTest()
+{
+    bool f = true;
+    auto* msg = new Messages::ClientDataMessage(std::vector<GLfloat>{27});
+    Messages::Message* base_msg = msg;
+    std::ostringstream oss;
+    {
+        boost::archive::binary_oarchive oa(oss);
+        oa << base_msg;
+    }
+    std::string serialized_data = oss.str();
+    std::istringstream iss(serialized_data);
+    Messages::Message* deserialized_msg = nullptr;
+    {
+        boost::archive::binary_iarchive ia(iss);
+        ia >> deserialized_msg;
+    }
+    if (auto* r = dynamic_cast<Messages::ClientDataMessage*>(deserialized_msg)) {
+        std::cout << "Data value: " << r->Position[0] << std::endl;
+    } else {
+        std::cout << "ClientDataMessage test failed" << std::endl;
+        f = false;
+    }
+    delete deserialized_msg;
+    delete msg;
+    return f;
+}
+
+int main() {
+
+    HelloTest();
+    ClientDataTest();
 
     return 0;
 }
