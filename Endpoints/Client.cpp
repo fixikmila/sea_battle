@@ -1,47 +1,74 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <future>
+#include <unistd.h>
+#include <vector>
+
+
+#include <SOIL.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 #include "../Messages/msg_export.h"
 #include "../Networking/Agent.h"
 #include "../Logic/ClientLogic.h"
 #include "../Gui/ClientGui.h"
+#include "../Graphics/Shader.h"
+#include "../Graphics/Camera.h"
 
-GLfloat x=0;
-GLfloat y=0;
-GLfloat z=0;
 
-const GLfloat step = 0.01; // 0.01
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
 
-    if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT))
-        y+=step;
 
-    if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT))
-        y-=step;
 
-    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-        x-=step;
 
-    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-        x+=step;
-}
+
+
+
+// The MAIN function, from here we start the application and run the game loop
+//int main()
+//{
+
+
+
+    // Game loop
+
+
+
+    //ty perenes texturu
+   // while (!glfwWindowShouldClose(window))
+    //{
+
+   // }
+
+
+   // return 0;
+//}
+
+
+
+///////
+
+
+
+
+
 
 int main()
 {
     ClientLogic client;
-    ClientGui gui(key_callback);
+    ClientGui::Init();
 
-    std::map<std::pair<std::string, unsigned short>, std::vector<GLfloat>> data = {};
+    std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>> data = {};
     std::cout << "[LOG] Starting message dispatch loop.." << std::endl;
 
     const std::chrono::duration<float> targetFrameTime(std::chrono::duration<float>(1.0f / CLIENT_FPS));
     auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
-    while (gui.isGood() && client.isGood())
+    while (ClientGui::isGood() && client.isGood())
     {
         auto currentTime = std::chrono::high_resolution_clock::now();
         auto elapsedTime = currentTime - lastFrameTime;
@@ -51,14 +78,14 @@ int main()
             currentTime = std::chrono::high_resolution_clock::now();
             elapsedTime = currentTime - lastFrameTime;
         }
-
-        client.DispatchMessage(data, x, y, z);
-        gui.DrawFrame(data, x, y, z);
+        client.DispatchMessage(data, ClientGui::x, ClientGui::y, ClientGui::z);
+        ClientGui::DrawFrame(data);
 
         lastFrameTime = currentTime;
 
     }
 
     std::cout << "[LOG] exiting" << std::endl;
+    ClientGui::Finish();
     return 0;
 }

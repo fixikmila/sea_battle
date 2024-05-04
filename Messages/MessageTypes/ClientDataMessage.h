@@ -13,9 +13,9 @@ namespace Messages {
     class ClientDataMessage : public Message {
     public:
         ClientDataMessage() = default;
-        explicit ClientDataMessage(std::vector<GLfloat> position);
-        void UpdatePosition(std::vector<GLfloat> position);
-        std::vector<GLfloat> Position = {0, 0, 0};
+        explicit ClientDataMessage(std::vector<GLuint> position);
+        void UpdatePosition(std::vector<GLuint> position);
+        std::vector<GLuint> Position = {0, 0, 0};
 
     private:
         friend class boost::serialization::access;

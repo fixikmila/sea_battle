@@ -20,7 +20,7 @@ bool ClientLogic::isGood()
     return agent->isWorking && !agent->isFailed;
 }
 
-void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, std::vector<GLfloat>>&data, GLfloat x, GLfloat y, GLfloat z)
+void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>>&data, GLuint x, GLuint y, GLuint z)
 {
     Messages::Message* msg;
     msg = agent->getMessage();
@@ -39,7 +39,7 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
             {
                 auto cd_msg = dynamic_cast<Messages::ClientDataPropagationMessage*>(msg);
                 data.erase(cd_msg->Id);
-                data.insert(std::pair<std::pair<std::string, unsigned short>, std::vector<GLfloat>>(cd_msg->Id, cd_msg->Data));
+                data.insert(std::pair<std::pair<std::string, unsigned short>, std::vector<GLuint>>(cd_msg->Id, cd_msg->Data));
             }
                 break;
             case Messages::ClientRemoval:
@@ -55,7 +55,7 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
     }
     if (isSrvFound)
     {
-        auto d_msg = new Messages::ClientDataMessage(std::vector<GLfloat>{x - GLfloat(0.1), y - GLfloat(0.1), z});
+        auto d_msg = new Messages::ClientDataMessage(std::vector<GLuint>{x, y, z});
         d_msg->AddressTo = srvaddr;
         agent->sendMessage(d_msg);
     }

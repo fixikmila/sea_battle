@@ -11,10 +11,10 @@ namespace Messages {
     class ClientDataPropagationMessage : public Message {
     public:
         ClientDataPropagationMessage() = default;
-        explicit ClientDataPropagationMessage(std::pair<std::string, unsigned short> id, std::vector<GLfloat> data);
+        explicit ClientDataPropagationMessage(std::pair<std::string, unsigned short> id, std::vector<GLuint> data);
 
-        void UpdateData(std::vector<GLfloat> data);
-        std::vector<GLfloat> Data = {};
+        void UpdateData(std::vector<GLuint> data);
+        std::vector<GLuint> Data = {};
         std::pair<std::string, unsigned short> Id;
 
 

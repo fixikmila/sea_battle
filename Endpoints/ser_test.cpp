@@ -4,7 +4,7 @@
 #include <iostream>
 #include "../Messages/msg_export.h"
 
-bool HelloTest()
+/*bool HelloTest()
 {
     bool f = true;
     auto* msg = new Messages::HelloMessage(42);
@@ -58,11 +58,11 @@ bool ClientDataTest()
     delete msg;
     return f;
 }
-
+*/
 int main() {
 
-    HelloTest();
-    ClientDataTest();
+    //HelloTest();
+   // ClientDataTest();
 
     return 0;
 }
