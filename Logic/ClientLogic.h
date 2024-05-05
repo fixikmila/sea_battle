@@ -24,7 +24,7 @@ private:
 public:
     ClientLogic();
     bool isGood();
-    void DispatchMessage(std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>>&data, GLuint x, GLuint y, GLuint z);
+    void DispatchMessage(std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>>&data,std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>>&data_cubes, GLuint x, GLuint y, GLuint z, int flag);
     ~ClientLogic();
 };
 

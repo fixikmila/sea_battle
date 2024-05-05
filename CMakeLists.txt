@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.23)
 project(Ships)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,13 +13,21 @@ set(GLAD_INCLUDE_DIR "Graphics/glad/include/glad")
 #set(GLAD_LIBRARY "/usr/lib/libGLAD.so")
 set(SOIL_INCLUDE_DIR "/usr/include/SOIL")
 set(SOIL_LIBRARY "/usr/lib/libSOIL.so")
+set(PQXX_INCLUDE_DIR "/usr/include/pqxx")
+set(PQXX_LIBRARY "/usr/lib/x86_64-linux-gnu/libpqxx.so")
 add_library(SOIL STATIC IMPORTED)
 add_library(GLAD STATIC IMPORTED)
+add_library(PQXX STATIC IMPORTED)
 set_target_properties(SOIL PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${SOIL_INCLUDE_DIR}"
         IMPORTED_LOCATION "${SOIL_LIBRARY}"
 )
+set_target_properties(PQXX PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${PQXX_INCLUDE_DIR}"
+        IMPORTED_LOCATION "${PQXX_LIBRARY}"
+)
 
+#find_package(libpqxx REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread chrono serialization)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
@@ -49,11 +57,14 @@ target_link_libraries(server  PRIVATE -static
 target_include_directories(client PRIVATE
         ${Boost_INCLUDE_DIRS}
         ${OPENGL_INCLUDE_DIRS}
-        ${GLFW_INCLUDE_DIRS})
+        ${GLFW_INCLUDE_DIRS}
+        #${PQXX_INCLUDE_DIR}
+)
 target_link_libraries(client PRIVATE
         ${OPENGL_LIBRARIES}
         ${GLEW_LIBRARIES}
         ${GLFW_LIBRARIES}
+        ${PQXX_LIBRARY}
         SOIL
 )
 target_link_libraries(client PRIVATE
