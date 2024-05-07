@@ -25,6 +25,8 @@ GLfloat ClientGui::deltaTime = {};
 GLfloat ClientGui::lastFrame = {};
 GLuint ClientGui::VAO = {};
 GLuint ClientGui::VBO = {};
+GLuint ClientGui::VAONORM = {};
+GLuint ClientGui::VBONORM = {};
 int ClientGui::width = {};
 int ClientGui::height = {};
 GLuint ClientGui::screenHeight = {};
@@ -33,8 +35,13 @@ std::vector< std::pair< std::pair<GLfloat,GLfloat>,GLfloat > > ClientGui::kuby =
 Shader* ClientGui::ourShader = nullptr;
 GLuint ClientGui::texture1 = {};
 GLuint ClientGui::texture2 = {};
-int ClientGui::used[6][6][6] = {{0,0,0},{0,0,0},{0,0,0}};
 
+int ClientGui::used[6][6][6] = {{0,0,0},{0,0,0},{0,0,0}};
+int ClientGui::type[6][6][6] = {{0,0,0},{0,0,0},{0,0,0}};
+int ClientGui::move[6][3]={{0,-1,0},{0,1,0},{0,0,-1} ,{0,0,1},{-1,0,0},{1,0,0} };
+GLfloat p = glm::pi<float>();
+float ClientGui::ror[6][4]={ {0,0,0,0},{0,1,0,0},{0,1,0,0} ,{0,1,0,0},{0,0,0,1},{0,0,0,1} };
+float ClientGui::timedel[6][6][6] = {{0,0,0},{0,0,0},{0,0,0}};
 
 ClientGui::ClientGui() {
 
@@ -43,6 +50,12 @@ ClientGui::ClientGui() {
 
 
 void ClientGui::Init() {
+    ror[1][0]=p;
+    ror[2][0]=p/2;
+    ror[3][0]=3*p/2;
+    ror[4][0]=3*p/2;
+    ror[5][0]=p/2;
+
 
     ClientGui::camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
     ClientGui::firstMouse = true;
@@ -63,9 +76,11 @@ void ClientGui::Init() {
             for(int q=0;q<6;q++)
             {
                 ClientGui::used[i][j][q]=0;
+                ClientGui::type[i][j][q]=rand()%6;
             }
         }
     }
+
 
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
     // Init GLFW
@@ -136,20 +151,20 @@ void ClientGui::Init() {
 
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
 
             -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
             -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -165,36 +180,91 @@ void ClientGui::Init() {
             0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
+            -0.5f, -0.5f, -0.5f,  0.35f, -0.35f,
+            0.5f, -0.5f, -0.5f,  0.35f, 0.35f,
+            0.5f, -0.5f,  0.5f,  -0.35f, 0.35f,
+            0.5f, -0.5f,  0.5f,  -0.35f, 0.35f,
+            -0.5f, -0.5f,  0.5f,  -0.35f, -0.35f,
+            -0.5f, -0.5f, -0.5f,  0.35f, -0.35f,
+
+            -0.5f,  0.5f, -0.5f,  0.35f, -0.35f,
+            0.5f,  0.5f, -0.5f,  0.35f, 0.35f,
+            0.5f,  0.5f,  0.5f,  -0.35f, 0.35f,
+            0.5f,  0.5f,  0.5f,  -0.35f, 0.35f,
+            -0.5f,  0.5f,  0.5f,  -0.35f, -0.35f,
+            -0.5f,  0.5f, -0.5f,  0.35f, -0.35f
+    };
+
+    GLfloat verticesnorm[] = {
             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,
             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
             -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+            -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
+
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
+            0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 0.0f
     };
+
 
     glGenVertexArrays(1, &ClientGui::VAO);
     glGenBuffers(1, &ClientGui::VBO);
+    glGenVertexArrays(1, &ClientGui::VAONORM);
+    glGenBuffers(1, &ClientGui::VBONORM);
 
     glBindVertexArray(ClientGui::VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, ClientGui::VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
     // TexCoord attribute
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(2);
+    glBindVertexArray(0); // Unbind VAO
 
+    glBindVertexArray(ClientGui::VAONORM);
+    glBindBuffer(GL_ARRAY_BUFFER, ClientGui::VBONORM);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesnorm), verticesnorm, GL_STATIC_DRAW);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    // TexCoord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
     glBindVertexArray(0); // Unbind VAO
 
 
@@ -210,7 +280,7 @@ void ClientGui::Init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load, create texture and generate mipmaps
 
-    unsigned char* image = SOIL_load_image("../Src/W.jpg", &ClientGui::width, &ClientGui::height, 0, SOIL_LOAD_RGB);
+    unsigned char* image = SOIL_load_image("../Src/D.jpg", &ClientGui::width, &ClientGui::height, 0, SOIL_LOAD_RGB);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ClientGui::width, ClientGui::height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
     SOIL_free_image_data(image);
@@ -225,7 +295,7 @@ void ClientGui::Init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load, create texture and generate mipmaps
-    image = SOIL_load_image("../Src/awesomeface.png", &ClientGui::width, &ClientGui::height, 0, SOIL_LOAD_RGB);
+    image = SOIL_load_image("../Src/A.jpg", &ClientGui::width, &ClientGui::height, 0, SOIL_LOAD_RGB);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ClientGui::width, ClientGui::height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
     SOIL_free_image_data(image);
@@ -277,7 +347,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
     glfwPollEvents();
     Do_Movement();
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.2f, 0.3f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -324,43 +394,76 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
     {
         if(value[3]==2 && ClientGui::used[value[0]][value[1]][value[2]]!=1)
         {
-            std::cout<<"tata"<<std::endl;
             ClientGui::used[value[0]][value[1]][value[2]]=2;
         }
 
     }
     ClientGui::used[ClientGui::x][ClientGui::y][ClientGui::z]=1;
+
+
+    glm::mat4 model=E();
+    model=glm::scale(model,glm::vec3(50,50,50));
+    GLint modelLoc = glGetUniformLocation(ClientGui::ourShader->ID, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glBindVertexArray(ClientGui::VAONORM);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ClientGui::texture2);
+    glUniform1i(glGetUniformLocation(ClientGui::ourShader->ID, "ourTexture1"), 2);
+    glUniform3f(glGetUniformLocation(ClientGui::ourShader->ID, "ind"),1,1,1);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
     for(int i=0;i<ClientGui::kuby.size();i++)
     {
+        float c0,c1,c2,c3;
+        c0=ror[type[(i/36)][((i%36)/6)][(i%6)]][0];
+        c1=ror[type[(i/36)][((i%36)/6)][(i%6)]][1];
+        c2=ror[type[(i/36)][((i%36)/6)][(i%6)]][2];
+        c3=ror[type[(i/36)][((i%36)/6)][(i%6)]][3];
         glm::mat4 model=E();
-
         model=glm::scale(model,glm::vec3(0.5,0.5,0.5));
         model = glm::translate(model, glm::vec3(ClientGui::kuby[i].first.first, ClientGui::kuby[i].first.second, ClientGui::kuby[i].second));
 
+        if(ClientGui::used[(i/36)][((i%36)/6)][(i%6)]==2)
+        {
+            GLfloat T=currentFrame-timedel[(i/36)][((i%36)/6)][(i%6)];
+            if(T>5)
+            {
+                continue;
+            }
+            else
+            {
+                int h=type[(i/36)][((i%36)/6)][(i%6)];
+                model = glm::translate(model, glm::vec3(ClientGui::move[h][0]*20*T, ClientGui::move[h][1]*20*T, ClientGui::move[h][2]*20*T));
+                model =glm::rotate(model, currentFrame*p*2, glm::vec3(0.0, 0.0, 1.0));
+            }
+        }
+
+        if(type[(i/36)][((i%36)/6)][(i%6)]!=0)
+        {
+            model=glm::rotate(model, c0, glm::vec3(c1, c2, c3));
+        }
         GLint modelLoc = glGetUniformLocation(ClientGui::ourShader->ID, "model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-        if(ClientGui::used[(i/36)][((i%36)/6)][(i%6)]==0)
+        if(ClientGui::used[(i/36)][((i%36)/6)][(i%6)]==1)
         {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, ClientGui::texture1);
-            glUniform1i(glGetUniformLocation(ClientGui::ourShader->ID, "ourTexture1"), 0);
-        }
-        else
-        {
+            glBindVertexArray(ClientGui::VAONORM);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, ClientGui::texture2);
             glUniform1i(glGetUniformLocation(ClientGui::ourShader->ID, "ourTexture1"), 1);
         }
-
-        glUniform3f(glGetUniformLocation(ClientGui::ourShader->ID, "ind"),1,1,1);
-        if(ClientGui::used[(i/36)][((i%36)/6)][(i%6)]<2)
+        else
         {
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        } else{
-            //std::cout<<"yohoo"<<std::endl;
+            glBindVertexArray(ClientGui::VAO);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, ClientGui::texture1);
+            glUniform1i(glGetUniformLocation(ClientGui::ourShader->ID, "ourTexture1"), 0);
         }
+        glUniform3f(glGetUniformLocation(ClientGui::ourShader->ID, "ind"),1,1,1);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
+
     glFlush();
     glFinish();
     glBindVertexArray(0);
@@ -419,18 +522,41 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         }
         else
         {
-           //std::cout<<*R<<" "<<*G<<" "<<*B<<" "<<std::endl;
-           //std::cout<<r<<" "<<g<<" "<<b<<" "<<std::endl;
-           if(ClientGui::used[ClientGui::r][ClientGui::g][ClientGui::b]<1)
-           {
-               ClientGui::used[ClientGui::r][ClientGui::g][ClientGui::b]=2;
-               ClientGui::was_deleted = 1;
-               //std::cout<<"END"<<std::endl;
-           }
+            //std::cout<<*R<<" "<<*G<<" "<<*B<<" "<<std::endl;
+            //std::cout<<r<<" "<<g<<" "<<b<<" "<<std::endl;
+            if(ClientGui::used[ClientGui::r][ClientGui::g][ClientGui::b]<1)
+            {
+                int r1=r,g1=g,b1=b,kot=0;
+                //std::cout<<"type "<<ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]<<" "<<ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][0]<<" "<<ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][1]<<" "<<ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][2]<<std::endl;
+                r1+=ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][0];
+                g1+=ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][1];
+                b1+=ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][2];
+                while (r1>=0 && g1>=0 && b1>=0 && r1<6 && g1<6 && b1<6)
+                {
+                    //std::cout<<r1<<" "<<g1<<" "<<b1<<" "<<ClientGui::used[r][g][b]<<std::endl;
+                    if(ClientGui::used[r1][g1][b1]<2)
+                    {
+                        kot=1;
+                        break;
+                    }
+                    r1+=ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][0];
+                    g1+=ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][1];
+                    b1+=ClientGui::move[ClientGui::type[ClientGui::r][ClientGui::g][ClientGui::b]][2];
+                }
+                if(kot==0)
+                {
+                    ClientGui::timedel[ClientGui::r][ClientGui::g][ClientGui::b]=(GLfloat)glfwGetTime();
+                    ClientGui::used[ClientGui::r][ClientGui::g][ClientGui::b]=2;
+                    ClientGui::was_deleted = 1;
+                }
+
+                //std::cout<<"END"<<std::endl;
+            }
 
         }
 
     }
+
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)==GLFW_RELEASE && flag==1)
     {
@@ -444,7 +570,8 @@ void ClientGui::Finish(){
     delete ClientGui::camera;
     glDeleteVertexArrays(1, &ClientGui::VAO);
     glDeleteBuffers(1, &ClientGui::VBO);
-
+    glDeleteVertexArrays(1, &ClientGui::VAONORM);
+    glDeleteBuffers(1, &ClientGui::VBONORM);
     glfwTerminate();
 }
 

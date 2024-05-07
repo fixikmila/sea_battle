@@ -37,7 +37,8 @@ public:
 private:
     static std::map<float,int> MAP;
     static std::map<int,float> ALP;
-    static int used[6][6][6];
+    static int used[6][6][6],type[6][6][6],move[6][3];
+    static float ror[6][4],timedel[6][6][6];
     static GLuint screenWidth, screenHeight;
 // Camera
     static Camera* camera;
@@ -50,7 +51,7 @@ private:
     // Window dimensions
     static int width, height;
     static GLFWwindow* window;
-    static GLuint VBO, VAO;
+    static GLuint VBO, VAO,VAONORM,VBONORM;
     static GLuint texture1;
     static GLuint texture2;
     static std::vector< std::pair< std::pair<GLfloat,GLfloat>,GLfloat > >kuby;
