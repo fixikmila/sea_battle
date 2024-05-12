@@ -84,7 +84,7 @@ int main()
         client.DispatchMessage(data,data_cubes, ClientGui::x, ClientGui::y, ClientGui::z,1);
 
         ClientGui::in_game = client.in_game;
-        if(ClientGui::F != 3)std::cout<<"FF"<<ClientGui::F<<std::endl;
+        //if(ClientGui::F != 3)std::cout<<"FF"<<ClientGui::F<<std::endl;
         ClientGui::DrawFrame(data,data_cubes);
         if(ClientGui::was_deleted){
             //send
@@ -95,16 +95,27 @@ int main()
 
         if(ClientGui::del!=0)std::cout<<"del"<<ClientGui::del<<std::endl;
         if(ClientGui::del == 3){//game ended
+
+            std::cout<<"game ended"<<ClientGui::mydel<<" "<<ClientGui::del<<std::endl;
+            if(2 * ClientGui::mydel > ClientGui::del){
+                std::cout<<"you won"<<std::endl;
+                ClientGui::F = 4;
+            } else if(ClientGui::mydel * 2== ClientGui::del){
+                std::cout<<"draw"<<std::endl;
+                ClientGui::F = 5;
+            } else{
+                std::cout<<"you lost"<<std::endl;
+                ClientGui::F = 6;
+            }
             ClientGui::reset();
-            ClientGui::F = 1;
-            std::cout<<"game ended"<<std::endl;
             //client.isSrvFound = false;
             client.in_game = false;
             data_cubes.clear();
             client.game_end = true;
         }
     }
-
+    client.game_end = true;
+    client.DispatchMessage(data,data_cubes, ClientGui::x, ClientGui::y, ClientGui::z,1);
     std::cout << "[LOG] exiting" << std::endl;
     ClientGui::Finish();
     return 0;

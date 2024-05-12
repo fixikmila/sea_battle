@@ -21,7 +21,7 @@ public:
     void DispatchMessage(std::map<std::pair<std::string, unsigned short>, boost::chrono::system_clock::time_point>& timestamps);
     std::map<std::pair<std::basic_string<char>, unsigned short>, std::pair<std::basic_string<char>, unsigned short>>match;
     std::map<std::pair<std::basic_string<char>, unsigned short>, bool>alive,added_in_queue;
-    std::queue<std::pair<std::basic_string<char>, unsigned short>>q;
+    std::map<std::pair<std::basic_string<char>, unsigned short>, bool >q;
     //ServerLogic();
     //void DispatchMessage();
     //~ServerLogic();

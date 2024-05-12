@@ -784,7 +784,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 1, 1, 1);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        std::cout<<"F="<<F<<" flag="<<flag<<std::endl;
+        //std::cout<<"F="<<F<<" flag="<<flag<<std::endl;
             if(ClientGui::F==1)
             {
                 glActiveTexture(GL_TEXTURE0);
@@ -908,16 +908,58 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                 }
                 else
                 {
-                    ClientGui::TextShader->use();
-                    std::string s1="waiting...";
-                    RenderText(*ClientGui::TextShader, s1,-0.45,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+                    if(F==3)
+                    {
+                        ClientGui::TextShader->use();
+                        std::string s1="waiting...";
+                        RenderText(*ClientGui::TextShader, s1,-0.45,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
 
-                    glFlush();
-                    glFinish();
-                    glfwSwapBuffers(ClientGui::window);
+                        glFlush();
+                        glFinish();
+                        glfwSwapBuffers(ClientGui::window);
 
-                    if(ClientGui::in_game){
-                        ClientGui::F = 0;
+                        if(ClientGui::in_game){
+                            ClientGui::F = 0;
+                        }
+                    }
+                    else
+                    {
+                        if(F==4)
+                        {
+                            ClientGui::TextShader->use();
+                            std::string s1="WIN";
+                            RenderText(*ClientGui::TextShader, s1,-0.25,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+
+                            glFlush();
+                            glFinish();
+                            glfwSwapBuffers(ClientGui::window);
+                        }
+                        else
+                        {
+                            if(F==5)
+                            {
+                                ClientGui::TextShader->use();
+                                std::string s1="draw";
+                                RenderText(*ClientGui::TextShader, s1,-0.35,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+
+                                glFlush();
+                                glFinish();
+                                glfwSwapBuffers(ClientGui::window);
+                            }
+                            else
+                            {
+                                if(F==6)
+                                {
+                                    ClientGui::TextShader->use();
+                                    std::string s1="Lose";
+                                    RenderText(*ClientGui::TextShader, s1,-0.25,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+
+                                    glFlush();
+                                    glFinish();
+                                    glfwSwapBuffers(ClientGui::window);
+                                }
+                            }
+                        }
                     }
                 }
 

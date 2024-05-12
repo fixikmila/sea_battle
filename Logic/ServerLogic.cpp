@@ -37,6 +37,7 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
             {
                 auto cd_msg = dynamic_cast<Messages::EndMessage*>(msg);
                 added_in_queue[cd_msg->AddressFrom] = alive[cd_msg->AddressFrom] = false;
+                q.erase(cd_msg->AddressFrom);
             }
                 break;
             case Messages::Hello:
@@ -52,10 +53,10 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
 
                             std::cout<<"paired!"<<std::endl;
 
-                            auto u = q.front();
+                            auto u = (*(q.begin())).first;
                                 match[u] = cd_msg->AddressFrom;
                                 match[cd_msg->AddressFrom] = u;
-                                q.pop();
+                                q.erase(u);
                             alive[cd_msg->AddressFrom] = alive[u] = true;
                             auto answ = new Messages::HelloMessage(cd_msg->Id);
                             answ->AddressTo = cd_msg->AddressFrom;
@@ -65,7 +66,7 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                             agent->sendMessage(answ2);
                         } else{
                             added_in_queue[cd_msg->AddressFrom] = true;
-                            q.push(cd_msg->AddressFrom);
+                            q[(cd_msg->AddressFrom)] = 1;
                             std::cout<<"added in queue"<<std::endl;
                         }
                     }
