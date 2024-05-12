@@ -65,6 +65,13 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
         }
         delete msg;
     }
+    if(game_end){
+        game_end = false;
+        auto hmsg = new Messages::EndMessage(1);
+        hmsg->AddressTo = srvaddr;
+        agent->sendMessage(hmsg);
+        isSrvFound = false;
+    }
     if (isSrvFound)
     {
         if(flag == 1)return;

@@ -13,5 +13,6 @@
 #include "MessageTypes/ServerAliveBroadcastMessage.h"
 #include "MessageTypes/ClientRemovalMessage.h"
 #include "MessageTypes/HelloMessage.h"
+#include "MessageTypes/ClientGameEnding.h"
 
 #endif //SHIPS_MSG_H

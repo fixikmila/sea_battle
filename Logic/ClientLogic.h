@@ -22,6 +22,7 @@ private:
     std::pair<std::string, unsigned short> srvaddr;
 
 public:
+    bool game_end = false;
     bool isSrvFound = false;
     bool in_game = false;
     ClientLogic();

@@ -98,9 +98,10 @@ int main()
             ClientGui::reset();
             ClientGui::F = 1;
             std::cout<<"game ended"<<std::endl;
-            client.isSrvFound = false;
+            //client.isSrvFound = false;
             client.in_game = false;
             data_cubes.clear();
+            client.game_end = true;
         }
     }
 

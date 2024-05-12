@@ -12,5 +12,6 @@ BOOST_CLASS_EXPORT(Messages::ClientDataMessage)
 BOOST_CLASS_EXPORT(Messages::ClientDataPropagationMessage)
 BOOST_CLASS_EXPORT(Messages::ClientRemovalMessage)
 BOOST_CLASS_EXPORT(Messages::HelloMessage)
+BOOST_CLASS_EXPORT(Messages::EndMessage)
 
 #endif //SHIPS_MSG_EXPORT_H

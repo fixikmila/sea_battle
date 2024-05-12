@@ -33,6 +33,12 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
         bool isValid = true;
         switch (msg->Type)
         {
+            case Messages::End:
+            {
+                auto cd_msg = dynamic_cast<Messages::EndMessage*>(msg);
+                added_in_queue[cd_msg->AddressFrom] = alive[cd_msg->AddressFrom] = false;
+            }
+                break;
             case Messages::Hello:
                 {
                     auto cd_msg = dynamic_cast<Messages::HelloMessage*>(msg);

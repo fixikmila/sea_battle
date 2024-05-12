@@ -16,7 +16,8 @@ namespace Messages {
         ClientData = 2,
         ClientDataPropagation = 3,
         ClientRemoval = 4,
-        Hello = 5
+        Hello = 5,
+        End = 6
     };
 
     class Message {

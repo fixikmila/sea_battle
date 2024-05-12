@@ -49,8 +49,9 @@ file(GLOB_RECURSE logicFiles "Logic/*.h" "Logic/*.cpp")
 file(GLOB_RECURSE guiFiles "Gui/*.h" "Gui/*.cpp")
 file(GLOB_RECURSE graphics "Graphics/Shader.h" "Graphics/Camera.h" "Graphics/glad.c")
 
-add_executable(server Endpoints/Server.cpp ${messagesFiles} ${utilFiles} ${netFiles} ${logicFiles})
+add_executable(server Endpoints/Server.cpp ${messagesFiles} ${utilFiles} ${netFiles} "Logic/ServerLogic.h" "Logic/ServerLogic.cpp")
 add_executable(client Endpoints/Client.cpp ${messagesFiles} ${utilFiles} ${netFiles} ${logicFiles} ${guiFiles} ${graphics})
+        #Messages/MessageTypes/ClientGameEnding.cpp)
 add_executable(test Endpoints/ser_test.cpp ${messagesFiles} ${utilFiles})
 
 target_include_directories(server PRIVATE
