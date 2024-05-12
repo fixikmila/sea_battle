@@ -560,7 +560,18 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
 
 
     //tut bula textura
+    for (auto &[key, value]: data_cubes) {
+        if (value[3] == 2 && ClientGui::used[value[0]][value[1]][value[2]] != 1) {
+            if(ClientGui::used[value[0]][value[1]][value[2]]!=2)
+            {
+                ClientGui::used[value[0]][value[1]][value[2]] = 2;
+                del++;
+                //data_cubes.erase(key);
+            }
 
+        }
+
+    }
 
     if (F == 0) {
         glDisable(GL_CULL_FACE);
@@ -595,18 +606,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
 
 
         }
-        for (auto &[key, value]: data_cubes) {
-            if (value[3] == 2 && ClientGui::used[value[0]][value[1]][value[2]] != 1) {
-                if(ClientGui::used[value[0]][value[1]][value[2]]!=2)
-                {
-                    ClientGui::used[value[0]][value[1]][value[2]] = 2;
-                    del++;
-                    //data_cubes.erase(key);
-                }
 
-            }
-
-        }
         //ClientGui::used[ClientGui::x][ClientGui::y][ClientGui::z] = 1;
 
 
