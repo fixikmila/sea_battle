@@ -27,6 +27,7 @@ bool ServerLogic::isGood()
 void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, boost::chrono::system_clock::time_point>& timestamps)
 {
     auto* msg = agent->getMessage();
+
     if (msg)
     {
         bool isValid = true;
@@ -39,20 +40,42 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                     answ->AddressTo = cd_msg->AddressFrom;
                     agent->sendMessage(answ);
                     std::cout << "Client was found!" << std::endl;
+                    if(!added_in_queue[cd_msg->AddressFrom] && !alive[cd_msg->AddressFrom]) {
+                        std::cout<<cd_msg->AddressFrom.first<<" "<<cd_msg->AddressFrom.second<<" "<<q.size()<<std::endl;
+
+                        std::cout<<"here"<<std::endl;
+                        if (!q.empty()) {
+                            std::cout<<"paired!"<<std::endl;
+
+                            auto u = q.front();
+                                match[u] = cd_msg->AddressFrom;
+                                match[cd_msg->AddressFrom] = u;
+                                q.pop();
+                            alive[cd_msg->AddressFrom] = alive[u] = true;
+                        } else{
+                            added_in_queue[cd_msg->AddressFrom] = true;
+                            q.push(cd_msg->AddressFrom);
+                            std::cout<<"added in queue"<<std::endl;
+                        }
+                    }
                 }
+                std::cout<<"lala"<<std::endl;
                 break;
             case Messages::ClientData:
                 {
                     auto cd_msg = dynamic_cast<Messages::ClientDataMessage*>(msg);
-                    for (const auto& [key, value] : timestamps)
+                    /*for (const auto& [key, value] : timestamps)
                     {
                         if (key != msg->AddressFrom)
-                        {
-                            auto prop = new Messages::ClientDataPropagationMessage(cd_msg->AddressFrom, cd_msg->Position);
-                            prop->AddressTo = key;
-                            agent->sendMessage(prop);
-                        }
+                        {*/
+                    if(alive[cd_msg->AddressFrom]) {
+                        auto key = match[cd_msg->AddressFrom];
+                        auto prop = new Messages::ClientDataPropagationMessage(cd_msg->AddressFrom, cd_msg->Position);
+                        prop->AddressTo = key;
+                        agent->sendMessage(prop);
                     }
+                   //     }
+                    //}
 
                 }
                 break;
