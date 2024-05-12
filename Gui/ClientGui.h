@@ -37,7 +37,7 @@ public:
     static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
     static void Do_Movement();
     static void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color, float dlin);
-
+    static bool in_game;
     static glm::mat4 E();
     static GLuint x,y,z,flag,F;
     static GLfloat fov;

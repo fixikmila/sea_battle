@@ -82,6 +82,7 @@ int main()
         }
         ClientGui::was_deleted = 0;
         client.DispatchMessage(data,data_cubes, ClientGui::x, ClientGui::y, ClientGui::z,1);
+        ClientGui::in_game = client.in_game;
         ClientGui::DrawFrame(data,data_cubes);
         if(ClientGui::was_deleted){
             //send

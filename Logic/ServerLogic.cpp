@@ -36,15 +36,14 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
             case Messages::Hello:
                 {
                     auto cd_msg = dynamic_cast<Messages::HelloMessage*>(msg);
-                    auto answ = new Messages::HelloMessage(cd_msg->Id);
-                    answ->AddressTo = cd_msg->AddressFrom;
-                    agent->sendMessage(answ);
+
                     std::cout << "Client was found!" << std::endl;
                     if(!added_in_queue[cd_msg->AddressFrom] && !alive[cd_msg->AddressFrom]) {
                         std::cout<<cd_msg->AddressFrom.first<<" "<<cd_msg->AddressFrom.second<<" "<<q.size()<<std::endl;
 
                         std::cout<<"here"<<std::endl;
                         if (!q.empty()) {
+
                             std::cout<<"paired!"<<std::endl;
 
                             auto u = q.front();
@@ -52,6 +51,12 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                                 match[cd_msg->AddressFrom] = u;
                                 q.pop();
                             alive[cd_msg->AddressFrom] = alive[u] = true;
+                            auto answ = new Messages::HelloMessage(cd_msg->Id);
+                            answ->AddressTo = cd_msg->AddressFrom;
+                            agent->sendMessage(answ);
+                            auto answ2 = new Messages::HelloMessage(cd_msg->Id);
+                            answ2->AddressTo = u;
+                            agent->sendMessage(answ2);
                         } else{
                             added_in_queue[cd_msg->AddressFrom] = true;
                             q.push(cd_msg->AddressFrom);

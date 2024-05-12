@@ -7,6 +7,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+bool ClientGui::in_game = true;
 GLuint ClientGui::x = 5;
 GLuint ClientGui::y = 5;
 GLuint ClientGui::z = 5;
@@ -846,7 +847,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                         }
 
                         if (kys == 1) {
-                            ClientGui::F = 0;
+                            ClientGui::F = 3;
                         }
 
                         if (kys == 2) {
@@ -867,14 +868,32 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
             else
             {
                 //std::cout<<"AAAAAAAAAA"<<std::endl;
-                ClientGui::TextShader->use();
-                std::string s1="By looking at the sides of the cube, you can understand which way it is directed (up, down, right, left, away from yourself, towards yourself). You can click on the cube and it will fly away in the direction in which it is directed, but only if there is no other cube in its path";
-                std::string s2="This is a multiplayer game, you will get a random opponent and the one who can remove more cubes wins";
-                RenderText(*ClientGui::TextShader, s1,-0.95,0.8,0.0015, glm::vec3(0.0, 0.0f, 1.0f),1000);
-                RenderText(*ClientGui::TextShader, s2,-0.95,-0.4,0.0015, glm::vec3(0.0, 0.0f, 1.0f),1000);
-                glFlush();
-                glFinish();
-                glfwSwapBuffers(ClientGui::window);
+                if(ClientGui::F==2)
+                {
+                    ClientGui::TextShader->use();
+                    std::string s1="By looking at the sides of the cube, you can understand which way it is directed (up, down, right, left, away from yourself, towards yourself). You can click on the cube and it will fly away in the direction in which it is directed, but only if there is no other cube in its path";
+                    std::string s2="This is a multiplayer game, you will get a random opponent and the one who can remove more cubes wins";
+                    RenderText(*ClientGui::TextShader, s1,-0.95,0.8,0.0015, glm::vec3(0.0, 0.0f, 1.0f),1000);
+                    RenderText(*ClientGui::TextShader, s2,-0.95,-0.4,0.0015, glm::vec3(0.0, 0.0f, 1.0f),1000);
+                    glFlush();
+                    glFinish();
+                    glfwSwapBuffers(ClientGui::window);
+                }
+                else
+                {
+                    ClientGui::TextShader->use();
+                    std::string s1="waiting...";
+                    RenderText(*ClientGui::TextShader, s1,-0.45,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+
+                    glFlush();
+                    glFinish();
+                    glfwSwapBuffers(ClientGui::window);
+
+                    if(ClientGui::in_game){
+                        ClientGui::F = 0;
+                    }
+                }
+
             }
     }
 

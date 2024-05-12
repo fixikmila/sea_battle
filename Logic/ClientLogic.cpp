@@ -4,6 +4,7 @@
 
 #include "ClientLogic.h"
 #include <iostream>
+#include "../Gui/ClientGui.h"
 
 ClientLogic::ClientLogic()
 {
@@ -30,6 +31,7 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
         {
             case Messages::Hello:
             {
+                in_game = true;
                 srvaddr = msg->AddressFrom;
                 isSrvFound = true;
                 std::cout << "Server was found!" << std::endl;
@@ -65,11 +67,12 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
     }
     if (isSrvFound)
     {
+        if(flag == 1)return;
         auto d_msg = new Messages::ClientDataMessage(std::vector<GLuint>{x, y, z, static_cast<unsigned int>(flag)});
         d_msg->AddressTo = srvaddr;
         agent->sendMessage(d_msg);
     }
-    else
+    else if(ClientGui::F == 3)
     {
         for (int i = SRV_PORT_RANGE_START; i <= SRV_PORT_RANGE_END; i++)
         {
