@@ -10,7 +10,15 @@ void main()
 {
            if(ind.z<1)
            {
-                FragColor = vec4(ind.x,ind.y,ind.z,1.0f);
+                if(ind.z>0.8)
+                {
+                    FragColor =texture(texture1, TexCoord)*vec4(1.0,0.0,0.0,1.0);
+                }
+                else
+                {
+                    FragColor = vec4(ind.x,ind.y,ind.z,1.0f);
+                }
+
            }
            else
            {

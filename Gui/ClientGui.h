@@ -16,9 +16,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <string>
 
 class ClientGui {
 public:
+    struct Character {
+        unsigned int TextureID; // ID handle of the glyph texture
+        glm::ivec2   Size;      // Size of glyph
+        glm::ivec2   Bearing;   // Offset from baseline to left/top of glyph
+        unsigned int Advance;   // Horizontal offset to advance to next glyph
+    };
+
     ClientGui();
     static void Init();
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -28,13 +36,17 @@ public:
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
     static void Do_Movement();
+    static void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color, float dlin);
+
     static glm::mat4 E();
-    static GLuint x,y,z,flag;
+    static GLuint x,y,z,flag,F;
     static GLfloat fov;
     static void Finish();
     static int r,g,b;
     static int was_deleted;
+
 private:
+    static std::map<GLchar, Character> Characters;
     static std::map<float,int> MAP;
     static std::map<int,float> ALP;
     static int used[6][6][6],type[6][6][6],move[6][3];
@@ -51,11 +63,16 @@ private:
     // Window dimensions
     static int width, height;
     static GLFWwindow* window;
-    static GLuint VBO, VAO,VAONORM,VBONORM;
+    static GLuint VBO, VAO,VAONORM,VBONORM,vao,vbo;
     static GLuint texture1;
     static GLuint texture2;
+    static GLuint texture3;
     static std::vector< std::pair< std::pair<GLfloat,GLfloat>,GLfloat > >kuby;
+    static std::vector< std::pair< std::pair<GLfloat,GLfloat>, std::pair<GLfloat,GLfloat> > > knopki;
+    static std::vector<std::string> stroki;
     static Shader* ourShader;
+    static Shader* KnopkiShader;
+    static Shader* TextShader;
 };
 
 
