@@ -20,8 +20,9 @@ class ClientLogic {
 private:
     Agent *agent;
     std::pair<std::string, unsigned short> srvaddr;
-    bool isSrvFound = false;
+
 public:
+    bool isSrvFound = false;
     bool in_game = false;
     ClientLogic();
     bool isGood();

@@ -28,6 +28,7 @@ public:
     };
 
     ClientGui();
+    static void reset();
     static void Init();
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
     ~ClientGui();
@@ -42,7 +43,7 @@ public:
     static GLuint x,y,z,flag,F;
     static GLfloat fov;
     static void Finish();
-    static int r,g,b;
+    static int r,g,b,del,mydel;
     static int was_deleted;
 
 private:

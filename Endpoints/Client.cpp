@@ -82,7 +82,9 @@ int main()
         }
         ClientGui::was_deleted = 0;
         client.DispatchMessage(data,data_cubes, ClientGui::x, ClientGui::y, ClientGui::z,1);
+
         ClientGui::in_game = client.in_game;
+        if(ClientGui::F != 3)std::cout<<"FF"<<ClientGui::F<<std::endl;
         ClientGui::DrawFrame(data,data_cubes);
         if(ClientGui::was_deleted){
             //send
@@ -91,6 +93,15 @@ int main()
         }
         lastFrameTime = currentTime;
 
+        if(ClientGui::del!=0)std::cout<<"del"<<ClientGui::del<<std::endl;
+        if(ClientGui::del == 3){//game ended
+            ClientGui::reset();
+            ClientGui::F = 1;
+            std::cout<<"game ended"<<std::endl;
+            client.isSrvFound = false;
+            client.in_game = false;
+            data_cubes.clear();
+        }
     }
 
     std::cout << "[LOG] exiting" << std::endl;

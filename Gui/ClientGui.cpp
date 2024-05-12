@@ -14,6 +14,8 @@ GLuint ClientGui::z = 5;
 int ClientGui::r = 0;
 int ClientGui::g = 0;
 int ClientGui::b = 0;
+int ClientGui::del = 0;
+int ClientGui::mydel = 0;
 int ClientGui::was_deleted = 0;
 GLuint ClientGui::flag = 0;
 GLuint ClientGui::F = 1;
@@ -120,7 +122,22 @@ void ClientGui::RenderText(Shader &shader, std::string text, float x, float y, f
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
-
+void ClientGui::reset() {
+    for(int i=0;i<6;i++)
+    {
+        for(int j=0;j<6;j++)
+        {
+            for(int q=0;q<6;q++)
+            {
+                used[i][j][q]=0;
+                timedel[i][j][q]=-20;
+            }
+        }
+    }
+    del=0;
+    mydel=0;
+    was_deleted=0;
+}
 void ClientGui::Init() {
     ror[1][0]=p;
     ror[2][0]=p/2;
@@ -580,7 +597,13 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         }
         for (auto &[key, value]: data_cubes) {
             if (value[3] == 2 && ClientGui::used[value[0]][value[1]][value[2]] != 1) {
-                ClientGui::used[value[0]][value[1]][value[2]] = 2;
+                if(ClientGui::used[value[0]][value[1]][value[2]]!=2)
+                {
+                    ClientGui::used[value[0]][value[1]][value[2]] = 2;
+                    del++;
+                    //data_cubes.erase(key);
+                }
+
             }
 
         }
@@ -725,6 +748,8 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                     if (kot == 0) {
                         ClientGui::used[ClientGui::r][ClientGui::g][ClientGui::b] = 2;
                         ClientGui::was_deleted = 1;
+                        del++;
+                        mydel++;
                     }
 
                     //std::cout<<"END"<<std::endl;
@@ -759,6 +784,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 1, 1, 1);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        std::cout<<"F="<<F<<" flag="<<flag<<std::endl;
             if(ClientGui::F==1)
             {
                 glActiveTexture(GL_TEXTURE0);
@@ -847,6 +873,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                         }
 
                         if (kys == 1) {
+                            std::cout<<"how??"<<std::endl;
                             ClientGui::F = 3;
                         }
 
