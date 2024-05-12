@@ -19,7 +19,8 @@
 #include "../Graphics/Shader.h"
 #include "../Graphics/Camera.h"
 
-
+#include <irrKlang.h>
+using namespace irrklang;
 
 
 
@@ -59,6 +60,8 @@
 
 int main()
 {
+    ISoundEngine *SoundEngine = createIrrKlangDevice();
+    SoundEngine->play2D("../Src/music.mp3", true);
     ClientLogic client;
     ClientGui::Init();
 
@@ -68,7 +71,6 @@ int main()
 
     const std::chrono::duration<float> targetFrameTime(std::chrono::duration<float>(1.0f / CLIENT_FPS));
     auto lastFrameTime = std::chrono::high_resolution_clock::now();
-
 
     while (ClientGui::isGood() && client.isGood())
     {
@@ -87,9 +89,14 @@ int main()
         //if(ClientGui::F != 3)std::cout<<"FF"<<ClientGui::F<<std::endl;
         ClientGui::DrawFrame(data,data_cubes);
         if(ClientGui::was_deleted){
+            SoundEngine->play2D("../Src/bleep.mp3");
             //send
            // std::cout<<"lalal"<<std::endl;
             client.DispatchMessage(data,data_cubes, ClientGui::r, ClientGui::g, ClientGui::b,2);
+        }
+        if(ClientGui::wrong){
+            ClientGui::wrong = false;
+            SoundEngine->play2D("../Src/erro.mp3");
         }
         lastFrameTime = currentTime;
 
@@ -114,6 +121,7 @@ int main()
             client.game_end = true;
         }
     }
+    SoundEngine->drop();
     client.game_end = true;
     client.DispatchMessage(data,data_cubes, ClientGui::x, ClientGui::y, ClientGui::z,1);
     std::cout << "[LOG] exiting" << std::endl;

@@ -66,6 +66,7 @@ target_include_directories(client PRIVATE
         ${OPENGL_INCLUDE_DIRS}
         ${GLFW_INCLUDE_DIRS}
         ${FREETYPE_INCLUDE_DIRS}
+        "${CMAKE_CURRENT_SOURCE_DIR}/irrklang/include"
 )
 target_link_libraries(client PRIVATE
         GL
@@ -75,6 +76,11 @@ target_link_libraries(client PRIVATE
         ${PQXX_LIBRARY}
         SOIL
         ${FREETYPE_LIBRARIES}
+        #"${CMAKE_CURRENT_SOURCE_DIR}/irrklang/bin/linux-gcc-64/ikpFlac.so"
+        "${CMAKE_CURRENT_SOURCE_DIR}/irrklang/bin/linux-gcc-64/libIrrKlang.so"
+        #"${CMAKE_CURRENT_SOURCE_DIR}/irrklang/bin/linux-gcc-64/ikpMP3.so"
+        #-lIrrKlang
+
 )
 target_link_libraries(client PRIVATE
         ${Boost_LIBRARIES}
@@ -88,3 +94,5 @@ target_link_libraries(test PRIVATE
         ${OPENGL_LIBRARIES})
 target_link_libraries(test PRIVATE
         ${Boost_LIBRARIES})
+
+

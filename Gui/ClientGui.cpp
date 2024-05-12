@@ -7,6 +7,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+bool ClientGui::wrong = true;
 bool ClientGui::in_game = true;
 GLuint ClientGui::x = 5;
 GLuint ClientGui::y = 5;
@@ -750,6 +751,8 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                         ClientGui::was_deleted = 1;
                         del++;
                         mydel++;
+                    } else{
+                        ClientGui::wrong = true;
                     }
 
                     //std::cout<<"END"<<std::endl;

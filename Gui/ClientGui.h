@@ -45,7 +45,7 @@ public:
     static void Finish();
     static int r,g,b,del,mydel;
     static int was_deleted;
-
+    static bool wrong;
 private:
     static std::map<GLchar, Character> Characters;
     static std::map<float,int> MAP;
