@@ -29,35 +29,6 @@ using namespace irrklang;
 
 
 
-// The MAIN function, from here we start the application and run the game loop
-//int main()
-//{
-
-
-
-    // Game loop
-
-
-
-    //ty perenes texturu
-   // while (!glfwWindowShouldClose(window))
-    //{
-
-   // }
-
-
-   // return 0;
-//}
-
-
-
-///////
-
-
-
-
-
-
 int main()
 {
     ISoundEngine *SoundEngine = createIrrKlangDevice();
@@ -89,7 +60,7 @@ int main()
         //if(ClientGui::F != 3)std::cout<<"FF"<<ClientGui::F<<std::endl;
         ClientGui::DrawFrame(data,data_cubes);
         if(ClientGui::was_deleted){
-            SoundEngine->play2D("../Src/bleep.mp3");
+           SoundEngine->play2D("../Src/bleep.mp3");
             //send
            // std::cout<<"lalal"<<std::endl;
             client.DispatchMessage(data,data_cubes, ClientGui::r, ClientGui::g, ClientGui::b,2);

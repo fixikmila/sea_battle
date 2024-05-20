@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.23)
 project(Ships)
 
 set(CMAKE_CXX_STANDARD 20)
-
+SET(CMAKE_EXE_LINKER_FLAGS
+        "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,${CMAKE_CURRENT_SOURCE_DIR}/irrklang/bin/linux-gcc-64")
+set(CMAKE_INSTALL_RPATH "/usr/local/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -ldl ")
-#include_directories (/usr/include/freetype2)
 # Set Boost options
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
@@ -42,6 +44,8 @@ find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLFW REQUIRED glfw3)
 find_package(Freetype REQUIRED)
+
+find_package(OpenAL REQUIRED)
 file(GLOB_RECURSE messagesFiles "Messages/*.h" "Messages/*.cpp")
 file(GLOB_RECURSE utilFiles "Utils/*.h" "Utils/*.cpp")
 file(GLOB_RECURSE netFiles "Networking/*.h" "Networking/*.cpp")
@@ -78,9 +82,7 @@ target_link_libraries(client PRIVATE
         ${FREETYPE_LIBRARIES}
         #"${CMAKE_CURRENT_SOURCE_DIR}/irrklang/bin/linux-gcc-64/ikpFlac.so"
         "${CMAKE_CURRENT_SOURCE_DIR}/irrklang/bin/linux-gcc-64/libIrrKlang.so"
-        #"${CMAKE_CURRENT_SOURCE_DIR}/irrklang/bin/linux-gcc-64/ikpMP3.so"
-        #-lIrrKlang
-
+        "${OPENAL_LIBRARY}"
 )
 target_link_libraries(client PRIVATE
         ${Boost_LIBRARIES}
