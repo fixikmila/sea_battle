@@ -46,11 +46,13 @@ public:
     static int r,g,b,del,mydel;
     static int was_deleted;
     static bool wrong;
+    static float gamesound, musicsound;
+    static bool esc_waiting;
+    static int used[6][6][6],type[6][6][6],move[6][3];
 private:
     static std::map<GLchar, Character> Characters;
     static std::map<float,int> MAP;
     static std::map<int,float> ALP;
-    static int used[6][6][6],type[6][6][6],move[6][3];
     static float ror[6][4],timedel[6][6][6];
     static GLuint screenWidth, screenHeight;
 // Camera
@@ -64,10 +66,13 @@ private:
     // Window dimensions
     static int width, height;
     static GLFWwindow* window;
-    static GLuint VBO, VAO,VAONORM,VBONORM,vao,vbo;
+    static GLuint VBO, VAO,VAONORM,VBONORM,vao,vbo,VAO1,VBO1;
     static GLuint texture1;
     static GLuint texture2;
     static GLuint texture3;
+
+    static std::vector<GLfloat> grom;
+    static std::vector<std::pair<GLfloat,GLfloat > > strelki,tigi;
     static std::vector< std::pair< std::pair<GLfloat,GLfloat>,GLfloat > >kuby;
     static std::vector< std::pair< std::pair<GLfloat,GLfloat>, std::pair<GLfloat,GLfloat> > > knopki;
     static std::vector<std::string> stroki;

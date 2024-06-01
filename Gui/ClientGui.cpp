@@ -6,12 +6,15 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-bool ClientGui::wrong = true;
-bool ClientGui::in_game = true;
+bool ClientGui::esc_waiting = false;
+float ClientGui::gamesound = 0.5f;
+float ClientGui::musicsound = 0.5f;
+bool ClientGui::wrong = false;
+bool ClientGui::in_game = false;
 GLuint ClientGui::x = 5;
 GLuint ClientGui::y = 5;
 GLuint ClientGui::z = 5;
+
 int ClientGui::r = 0;
 int ClientGui::g = 0;
 int ClientGui::b = 0;
@@ -34,6 +37,8 @@ GLfloat ClientGui::deltaTime = {};
 GLfloat ClientGui::lastFrame = {};
 GLuint ClientGui::VAO = {};
 GLuint ClientGui::VBO = {};
+GLuint ClientGui::VAO1 = {};
+GLuint ClientGui::VBO1 = {};
 GLuint ClientGui::vao = {};
 GLuint ClientGui::vbo = {};
 GLuint ClientGui::VAONORM = {};
@@ -44,7 +49,10 @@ GLuint ClientGui::screenHeight = {};
 GLuint ClientGui::screenWidth = {};
 std::vector< std::pair< std::pair<GLfloat,GLfloat>,GLfloat > > ClientGui::kuby = {};
 std::vector< std::pair< std::pair<GLfloat,GLfloat>,std::pair<GLfloat,GLfloat> > > ClientGui::knopki = {};
+std::vector<std::pair<GLfloat,GLfloat > > ClientGui::strelki= {};
+std::vector<std::pair<GLfloat,GLfloat > > ClientGui::tigi= {};
 std::vector<std::string> ClientGui::stroki= {};
+std::vector<GLfloat> ClientGui::grom={};
 Shader* ClientGui::ourShader = nullptr;
 Shader* ClientGui::KnopkiShader = nullptr;
 Shader* ClientGui::TextShader = nullptr;
@@ -123,6 +131,8 @@ void ClientGui::RenderText(Shader &shader, std::string text, float x, float y, f
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+
 void ClientGui::reset() {
     for(int i=0;i<6;i++)
     {
@@ -166,10 +176,11 @@ void ClientGui::Init() {
             for(int q=0;q<6;q++)
             {
                 ClientGui::used[i][j][q]=0;
-                ClientGui::type[i][j][q]=rand()%6;
+                ClientGui::type[i][j][q]=4;
             }
         }
     }
+
 
 
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
@@ -243,6 +254,14 @@ void ClientGui::Init() {
     ClientGui::TextShader = new Shader("../Graphics/Vtext.txt","../Graphics/Ftext.txt");
     //std::cout<<"textID="<<TextShader->ID<<std::endl;
     // Set up vertex data (and buffer(s)) and attribute pointers
+    GLfloat V[]={
+            -0.5f, -0.5f, -0.5f,  0.3f, -0.3f,
+            0.5f, -0.5f, -0.5f,  0.3f, 0.3f,
+            0.5f,  0.5f, -0.5f,  -0.3f, 0.3f,
+            0.5f,  0.5f, -0.5f,  -0.3f, 0.3f,
+            -0.5f,  0.5f, -0.5f, -0.3f, -0.3f,
+            -0.5f, -0.5f, -0.5f,  0.3f, -0.3f,
+    };
     GLfloat vertices[] = {
             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
             0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -335,6 +354,8 @@ void ClientGui::Init() {
 
     glGenVertexArrays(1, &ClientGui::VAO);
     glGenBuffers(1, &ClientGui::VBO);
+    glGenVertexArrays(1, &ClientGui::VAO1);
+    glGenBuffers(1, &ClientGui::VBO1);
     glGenVertexArrays(1, &ClientGui::VAONORM);
     glGenBuffers(1, &ClientGui::VBONORM);
 
@@ -348,6 +369,23 @@ void ClientGui::Init() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(2);
     glBindVertexArray(0); // Unbind VAO
+
+
+
+    glBindVertexArray(ClientGui::VAO1);
+    glBindBuffer(GL_ARRAY_BUFFER, ClientGui::VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(V), V, GL_STATIC_DRAW);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    // TexCoord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+    glBindVertexArray(0); // Unbind VAO
+
+
+
+
 
     glBindVertexArray(ClientGui::VAONORM);
     glBindBuffer(GL_ARRAY_BUFFER, ClientGui::VBONORM);
@@ -513,12 +551,26 @@ void ClientGui::Init() {
         }
     }
 
-    ClientGui::knopki.push_back({{0,-5},{0.1,0.001}});
-    ClientGui::knopki.push_back({{0,0},{0.3,0.0024}});
-    ClientGui::knopki.push_back({{0,2},{0.36,0.0012}});
+    ClientGui::knopki.push_back({{-0.04,-0.6},{0.1,0.0015}});
+    ClientGui::knopki.push_back({{-0.04,-0.2},{0.3,0.0015}});
+    ClientGui::knopki.push_back({{-0.04,-0.4},{0.36,0.0015}});
+    ClientGui::knopki.push_back({{-0.04,0},{0.3,0.0015}});
+
     ClientGui::stroki.push_back("Exit");
     ClientGui::stroki.push_back("Start");
     ClientGui::stroki.push_back("How to play");
+    ClientGui::stroki.push_back("Settings");
+
+
+    ClientGui::strelki.push_back({0.345,-0.2});
+    ClientGui::strelki.push_back({0.345,0});
+    ClientGui::strelki.push_back({0.345,-0.4});
+    for(int i=0;i<ClientGui::strelki.size();i++)
+    {
+        ClientGui::tigi.push_back(ClientGui::strelki[i]);
+        grom.push_back(0.5);
+        tigi[i].first-=0.5;
+    }
 }
 
 bool ClientGui::isGood() {
@@ -685,7 +737,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ClientGui::flag == 0) {
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ClientGui::flag == 0 && ClientGui::F==0) {
             ClientGui::flag = 1;
             glBindVertexArray(ClientGui::VAO);
             for (int i = 0; i < ClientGui::kuby.size(); i++) {
@@ -763,19 +815,27 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         }
 
 
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && flag == 1) {
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && flag == 1 && ClientGui::F==0) {
             ClientGui::flag = 0;
         }
     }
     else
     {
+        if(ClientGui::in_game)
+        {
+            ClientGui::stroki[1]="continue";
+        }
+        else
+        {
+            ClientGui::stroki[1]="Start";
+        }
         glEnable(GL_CULL_FACE);
 
         ClientGui::KnopkiShader->use();
 
         glBindVertexArray(ClientGui::VAONORM);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, ClientGui::texture3);
+        glBindTexture(GL_TEXTURE_2D, ClientGui::texture2);
         glUniform1i(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ourTexture1"), 0);
 
 
@@ -785,36 +845,49 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
 
         GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 1, 1, 1);
+
+        glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 1, 0.9, 1);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
         //std::cout<<"F="<<F<<" flag="<<flag<<std::endl;
             if(ClientGui::F==1)
             {
+                glBindVertexArray(ClientGui::VAO1);
                 glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, ClientGui::texture3);
+                glBindTexture(GL_TEXTURE_2D, ClientGui::texture1);
+
                 for (int i = 0; i < ClientGui::knopki.size(); i++) {
                     //std::cout<<"i="<<i<<std::endl;
                     glm::mat4 model = E();
-                    model = glm::scale(model,
-                                       glm::vec3(ClientGui::knopki[i].second.first, ClientGui::knopki[i].second.first,
-                                                 1));
                     model = glm::translate(model, glm::vec3(ClientGui::knopki[i].first.first,
                                                             ClientGui::knopki[i].first.second,
                                                             1));
+                    model = glm::scale(model,
+                                       glm::vec3(1.4, 0.1,
+                                                 1));
                     GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                    glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 1, 0.9, 1);
+                    if(i==1)
+                    {
+                        glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 0.34, 0.63, 0.68);
+                    }
+                    else
+                    {
+                        glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 0.48, 0.45, 0.42);
+                    }
+
                     glDrawArrays(GL_TRIANGLES, 0, 6);
+
                 }
                 glFlush();
                 glFinish();
-
+                glBindVertexArray(ClientGui::VAONORM);
                 ClientGui::TextShader->use();
                 for (int i = 0; i < ClientGui::knopki.size(); i++) {
                     RenderText(*ClientGui::TextShader, ClientGui::stroki[i],
-                               (ClientGui::knopki[i].first.first - 0.4) * ClientGui::knopki[i].second.first,
-                               (ClientGui::knopki[i].first.second - 0.2) * ClientGui::knopki[i].second.first,
-                               ClientGui::knopki[i].second.second, glm::vec3(0.0, 0.0f, 0.0f),100);
+                               ClientGui::knopki[i].first.first-0.3 ,
+                               ClientGui::knopki[i].first.second-0.025,
+                               ClientGui::knopki[i].second.second, glm::vec3(30.85, 0.89f, 0.82f),100);
                 }
 
 
@@ -825,7 +898,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ClientGui::flag == 0) {
+                if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ClientGui::flag == 0 && ClientGui::F==1) {
                     glBindVertexArray(ClientGui::VAONORM);
                     ClientGui::flag = 1;
                     ClientGui::KnopkiShader->use();
@@ -839,11 +912,12 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                         glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), i1, i2, i3);
 
                         glm::mat4 model = E();
-                        model = glm::scale(model, glm::vec3(ClientGui::knopki[i].second.first,
-                                                            ClientGui::knopki[i].second.first, 1));
                         model = glm::translate(model, glm::vec3(ClientGui::knopki[i].first.first,
                                                                 ClientGui::knopki[i].first.second,
                                                                 1));
+                        model = glm::scale(model,
+                                           glm::vec3(1.4, 0.1,
+                                                     1));
                         GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
                         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
@@ -869,19 +943,23 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                     if (ClientGui::r == ClientGui::b && ClientGui::b == ClientGui::g && ClientGui::b == 10) {
                         //std::cout << "BEL" << std::endl;
                     } else {
-                        std::cout << kys << std::endl;
                         if (kys == 0) {
                             glfwSetWindowShouldClose(ClientGui::window, GL_TRUE);
-                            exit(0);
+                           // exit(0);
                         }
 
                         if (kys == 1) {
-                            std::cout<<"how??"<<std::endl;
+                            //std::cout<<"how??"<<std::endl;
                             ClientGui::F = 3;
                         }
 
                         if (kys == 2) {
                             ClientGui::F = 2;
+                        }
+
+                        if(kys==3)
+                        {
+                            ClientGui::F = 7;
                         }
                     }
 
@@ -891,7 +969,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                 glFlush();
                 glFinish();
 
-                if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && ClientGui::flag == 1) {
+                if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && ClientGui::flag == 1 && ClientGui::F==1) {
                     ClientGui::flag = 0;
                 }
             }
@@ -900,22 +978,23 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                 //std::cout<<"AAAAAAAAAA"<<std::endl;
                 if(ClientGui::F==2)
                 {
+
                     ClientGui::TextShader->use();
                     std::string s1="By looking at the sides of the cube, you can understand which way it is directed (up, down, right, left, away from yourself, towards yourself). You can click on the cube and it will fly away in the direction in which it is directed, but only if there is no other cube in its path";
                     std::string s2="This is a multiplayer game, you will get a random opponent and the one who can remove more cubes wins";
-                    RenderText(*ClientGui::TextShader, s1,-0.95,0.8,0.0015, glm::vec3(0.0, 0.0f, 1.0f),1000);
-                    RenderText(*ClientGui::TextShader, s2,-0.95,-0.4,0.0015, glm::vec3(0.0, 0.0f, 1.0f),1000);
+                    RenderText(*ClientGui::TextShader, s1,-0.95,0.8,0.0015, glm::vec3(0.33, 0.32f, 0.30f),1000);
+                    RenderText(*ClientGui::TextShader, s2,-0.95,-0.4,0.0015, glm::vec3(0.33, 0.32f, 0.30f),1000);
                     glFlush();
                     glFinish();
                     glfwSwapBuffers(ClientGui::window);
                 }
                 else
                 {
-                    if(F==3)
+                    if(ClientGui::F==3)
                     {
                         ClientGui::TextShader->use();
                         std::string s1="waiting...";
-                        RenderText(*ClientGui::TextShader, s1,-0.45,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+                        RenderText(*ClientGui::TextShader, s1,-0.4,-0.1,0.005, glm::vec3(0.33, 0.32f, 0.30f),1000);
 
                         glFlush();
                         glFinish();
@@ -927,11 +1006,11 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                     }
                     else
                     {
-                        if(F==4)
+                        if(ClientGui::F==4)
                         {
                             ClientGui::TextShader->use();
                             std::string s1="WIN";
-                            RenderText(*ClientGui::TextShader, s1,-0.25,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+                            RenderText(*ClientGui::TextShader, s1,-0.3,-0.1,0.005, glm::vec3(1.0, 1.0f, 1.0f),1000);
 
                             glFlush();
                             glFinish();
@@ -939,11 +1018,11 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                         }
                         else
                         {
-                            if(F==5)
+                            if(ClientGui::F==5)
                             {
                                 ClientGui::TextShader->use();
-                                std::string s1="draw";
-                                RenderText(*ClientGui::TextShader, s1,-0.35,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+                                std::string s1="DRAW";
+                                RenderText(*ClientGui::TextShader, s1,-0.4,-0.1,0.005, glm::vec3(1.0, 1.0f, 1.0f),1000);
 
                                 glFlush();
                                 glFinish();
@@ -951,15 +1030,218 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                             }
                             else
                             {
-                                if(F==6)
+                                if(ClientGui::F==6)
                                 {
                                     ClientGui::TextShader->use();
-                                    std::string s1="Lose";
-                                    RenderText(*ClientGui::TextShader, s1,-0.25,0.0,0.005, glm::vec3(1.0, 0.0f, 1.0f),1000);
+                                    std::string s1="LOSE";
+                                    RenderText(*ClientGui::TextShader, s1,-0.35,-0.1,0.005, glm::vec3(1.0, 1.0f, 1.0f),1000);
 
                                     glFlush();
                                     glFinish();
                                     glfwSwapBuffers(ClientGui::window);
+                                }
+                                else
+                                {
+                                    if(ClientGui::F==7)
+                                    {
+                                        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                                        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                                        ClientGui::KnopkiShader->use();
+
+                                        glBindVertexArray(ClientGui::VAONORM);
+                                        glActiveTexture(GL_TEXTURE0);
+                                        glBindTexture(GL_TEXTURE_2D, ClientGui::texture2);
+                                        glUniform1i(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ourTexture1"), 0);
+
+
+                                        glm::mat4 model = E();
+                                        model = glm::scale(model, glm::vec3(2, 2, 1));
+                                        model = glm::translate(model, glm::vec3(0, 0, 1.1));
+
+                                        GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
+                                        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                                        glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 1, 1, 1);
+                                        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+
+
+                                        ClientGui::KnopkiShader->use();
+
+                                        glBindVertexArray(ClientGui::VAO1);
+                                        glActiveTexture(GL_TEXTURE0);
+                                        glBindTexture(GL_TEXTURE_2D, ClientGui::texture1);
+                                        glUniform1i(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ourTexture1"), 0);
+                                        glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 1, 1, 1);
+                                        for(int i=0;i<strelki.size();i++)
+                                        {
+                                            glm::mat4 model = E();
+                                            model = glm::translate(model, glm::vec3(strelki[i].first, strelki[i].second, 1));
+                                            model = glm::scale(model, glm::vec3(0.69, 0.1, 1));
+
+
+                                            GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
+                                            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+                                            glDrawArrays(GL_TRIANGLES, 0, 6);
+                                        }
+
+                                        glBindVertexArray(ClientGui::VAONORM);
+                                        glActiveTexture(GL_TEXTURE0);
+                                        glBindTexture(GL_TEXTURE_2D, ClientGui::texture2);
+                                        glUniform1i(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ourTexture1"), 0);
+
+                                        for(int i=0;i<tigi.size();i++)
+                                        {
+                                            glm::mat4 model = E();
+                                            model = glm::translate(model, glm::vec3(tigi[i].first+grom[i], tigi[i].second, 0.9));
+                                            model = glm::scale(model, glm::vec3(0.1, 0.13, 1));
+
+
+                                            GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
+                                            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                                            glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"),0.48, 0.45, 0.42);
+                                            glDrawArrays(GL_TRIANGLES, 0, 6);
+                                        }
+
+
+                                        glActiveTexture(GL_TEXTURE0);
+                                        glBindTexture(GL_TEXTURE_2D, ClientGui::texture3);
+                                        glUniform1i(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ourTexture1"), 0);
+
+                                        for(int i=0;i<strelki.size();i++)
+                                        {
+                                            glm::mat4 model = E();
+                                            model = glm::translate(model, glm::vec3(strelki[i].first-0.395, strelki[i].second, 0.9));
+                                            model = glm::scale(model, glm::vec3(0.05, 0.1, 1));
+
+
+                                            GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
+                                            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                                            glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 0.48, 0.45, 0.42);
+                                            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+
+                                            model = E();
+                                            model = glm::translate(model, glm::vec3(strelki[i].first+0.395, strelki[i].second, 0.9));
+                                            model = glm::scale(model, glm::vec3(0.05, 0.1, 1));
+
+
+                                            modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
+                                            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                                            glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"), 0.48, 0.45, 0.42);
+                                            glDrawArrays(GL_TRIANGLES, 0, 6);
+                                        }
+
+                                        ClientGui::TextShader->use();
+                                        RenderText(*ClientGui::TextShader, "Music Volume",-0.85,-0.025,0.0015, glm::vec3(0.33, 0.32f, 0.30f),1000);
+                                        RenderText(*ClientGui::TextShader, "Game Volume",-0.85,-0.2-0.025,0.0015, glm::vec3(0.33, 0.32f, 0.30f),1000);
+                                        RenderText(*ClientGui::TextShader, "Mouse sensitivity",-0.85,-0.4-0.025,0.0015, glm::vec3(0.33, 0.32f, 0.30f),1000);
+                                        for(int i=0;i<strelki.size();i++)
+                                        {
+                                            RenderText(*ClientGui::TextShader, "-",strelki[i].first-0.395-0.0125,strelki[i].second-0.025,0.0015, glm::vec3(0.85, 0.89f, 0.82f),1000);
+                                            RenderText(*ClientGui::TextShader, "+",strelki[i].first+0.395-0.02,strelki[i].second-0.025,0.0015, glm::vec3(0.85, 0.89f, 0.82f),1000);
+                                        }
+
+
+                                        ClientGui::KnopkiShader->use();
+                                        glFlush();
+                                        glFinish();
+                                        glfwSwapBuffers(ClientGui::window);
+
+                                        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                                        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                                        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ClientGui::flag == 0 && ClientGui::F==7)
+                                        {
+                                            glBindVertexArray(ClientGui::VAONORM);
+                                            ClientGui::flag = 1;
+                                            ClientGui::KnopkiShader->use();
+                                            for (int i = 0; i < ClientGui::strelki.size(); i++) {
+                                                GLfloat j = i;
+                                                GLfloat i1 = j / 10, i2 = 0, i3 = 0;
+                                                glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"),
+                                                            i1, i2, i3);
+
+                                                glm::mat4 model = E();
+                                                model = glm::translate(model, glm::vec3(strelki[i].first-0.395, strelki[i].second, 0.9));
+                                                model = glm::scale(model, glm::vec3(0.05, 0.1, 1));
+
+
+                                                GLint modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID,
+                                                                                      "model");
+                                                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                                                glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+                                                i2 = 1;
+                                                glUniform3f(glGetUniformLocation(ClientGui::KnopkiShader->ID, "ind"),
+                                                            i1, i2, i3);
+                                                model = E();
+                                                model = glm::translate(model, glm::vec3(strelki[i].first+0.395, strelki[i].second, 0.9));
+                                                model = glm::scale(model, glm::vec3(0.05, 0.1, 1));
+
+
+                                                modelLoc = glGetUniformLocation(ClientGui::KnopkiShader->ID, "model");
+                                                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                                                glDrawArrays(GL_TRIANGLES, 0, 6);
+
+                                            }
+
+
+                                            glFlush();
+                                            glFinish();
+
+                                            double X, Y;
+                                            glfwGetCursorPos(window, &X, &Y);
+
+                                            Y = screenHeight - Y;
+                                            GLfloat data[4];
+                                            glReadPixels(X, Y, 1, 1, GL_RGBA, GL_FLOAT, data);
+
+
+                                            ClientGui::r = round(data[0] * 10);
+                                            ClientGui::g = round(data[1] * 10);
+                                            ClientGui::b = round(data[2] * 10);
+
+                                            //std::cout << "r=" << r << " g=" << g << std::endl;
+                                            if (ClientGui::r == ClientGui::b && ClientGui::b == ClientGui::g &&
+                                                ClientGui::b == 10) {
+                                                //std::cout << "BEL" << std::endl;
+                                            } else {
+                                                if (g == 0) {
+                                                    if (grom[r] > 0.2) {
+                                                        grom[r] -= 0.05;
+                                                        if(r == 0){
+                                                            gamesound -= 0.5f/6;
+                                                        } else if(r == 1){
+                                                            musicsound -= 0.5f/6;
+                                                        }
+
+                                                    }
+                                                } else {
+                                                    if (grom[r] < 0.8) {
+                                                        grom[r] += 0.05;
+                                                        if(r == 0){
+                                                            gamesound += 0.5f/6;
+                                                        } else if(r == 1){
+                                                            musicsound += 0.5f/6;
+                                                        }
+                                                    }
+                                                }
+
+                                            }
+
+
+
+                                        }
+
+                                        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && ClientGui::flag == 1 && ClientGui::F==7)
+                                        {
+                                            ClientGui::flag = 0;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -991,12 +1273,13 @@ void ClientGui::key_callback(GLFWwindow* window, int key, int scancode, int acti
 {
     if(F!=1)
     {
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            F=1;
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) { ////
+            if(ClientGui::F == 3)ClientGui::esc_waiting = true;
+            ClientGui::F=1;
         }
     }
 
-    if(F==0) {
+    if(ClientGui::F==0) {
         //cout << key << endl;
         if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
             if (ClientGui::y < 5) {
@@ -1072,7 +1355,7 @@ void ClientGui::mouse_callback(GLFWwindow* window, double xpos, double ypos)
         {
             GLfloat xoffset = xpos - ClientGui::screenWidth/2;
             GLfloat yoffset = ClientGui::screenHeight/2 - ypos;
-            camera->ProcessMouseMovement(xoffset, yoffset);
+            camera->ProcessMouseMovement(xoffset*grom[2], yoffset*grom[2]);
         }
     }
 

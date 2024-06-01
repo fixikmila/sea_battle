@@ -3,7 +3,7 @@
 //
 
 #include "ServerLogic.h"
-
+#include<bits/stdc++.h>
 ServerLogic::ServerLogic() {
     agent = new Agent;
     bool s = agent->start(SRV_PORT_RANGE_START, SRV_PORT_RANGE_START);
@@ -23,7 +23,17 @@ bool ServerLogic::isGood()
 {
     return agent->isWorking && !agent->isFailed;
 }
-
+int types[6][6][6];
+std::mt19937 rng(std::chrono::steady_clock().now().time_since_epoch().count());
+void generate(){
+    for(int i = 0; i < 6; i++){
+        for(int j = 0; j < 6; j++){
+            for(int k = 0; k < 6; k++){
+                types[i][j][k] = rng() % 6;
+            }
+        }
+    }
+}
 void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, boost::chrono::system_clock::time_point>& timestamps)
 {
     auto* msg = agent->getMessage();
@@ -36,15 +46,16 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
             case Messages::End:
             {
                 auto cd_msg = dynamic_cast<Messages::EndMessage*>(msg);
+                if(q.contains(cd_msg->AddressFrom))q.erase(cd_msg->AddressFrom);
                 added_in_queue[cd_msg->AddressFrom] = alive[cd_msg->AddressFrom] = false;
-                q.erase(cd_msg->AddressFrom);
             }
                 break;
             case Messages::Hello:
                 {
                     auto cd_msg = dynamic_cast<Messages::HelloMessage*>(msg);
 
-                    std::cout << "Client was found!" << std::endl;
+                    std::cout << "Client was found!" << cd_msg->AddressFrom.first<<" "<<cd_msg->AddressFrom.second<<
+                    " "<<added_in_queue[cd_msg->AddressFrom]<<" "<<alive[cd_msg->AddressFrom]<<std::endl;
                     if(!added_in_queue[cd_msg->AddressFrom] && !alive[cd_msg->AddressFrom]) {
                         std::cout<<cd_msg->AddressFrom.first<<" "<<cd_msg->AddressFrom.second<<" "<<q.size()<<std::endl;
 
@@ -57,7 +68,27 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                                 match[u] = cd_msg->AddressFrom;
                                 match[cd_msg->AddressFrom] = u;
                                 q.erase(u);
+                                added_in_queue[u] = false;
                             alive[cd_msg->AddressFrom] = alive[u] = true;
+                            //send maps here
+                                        generate();
+                            for(int i = 0; i < 6; i++)
+                                for(int j = 0; j < 6; j++)
+                                    for(int k = 0; k < 6; k++) {
+                                        auto prop = new Messages::ClientDataPropagationMessage(cd_msg->AddressFrom,
+                                                                                               std::vector<GLuint>{static_cast<unsigned int>(i), static_cast<unsigned int>(j),
+                                                                                                                   static_cast<unsigned int>(k),
+                                                                                                                   4, static_cast<unsigned int>(types[i][j][k])});
+                                        prop->AddressTo = cd_msg->AddressFrom;
+                                        agent->sendMessage(prop);
+                                        auto prop2 = new Messages::ClientDataPropagationMessage(u,
+                                                                                                std::vector<GLuint>{static_cast<unsigned int>(i),
+                                                                                                                    static_cast<unsigned int>(j),
+                                                                                                                    static_cast<unsigned int>(k),
+                                                                                                                    4,static_cast<unsigned int>(types[i][j][k])});
+                                        prop2->AddressTo = u;
+                                        agent->sendMessage(prop2);
+                                    }
                             auto answ = new Messages::HelloMessage(cd_msg->Id);
                             answ->AddressTo = cd_msg->AddressFrom;
                             agent->sendMessage(answ);
