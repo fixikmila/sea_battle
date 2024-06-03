@@ -87,7 +87,7 @@ int main()
             client.in_game = false;
             data_cubes.clear();
         }
-        if(client.in_game && ClientGui::del == client.how_many){//game ended
+        if(client.in_game && ClientGui::del == std::min(20, client.how_many)){//game ended
 
             std::cout<<"game ended"<<ClientGui::mydel<<" "<<ClientGui::del<<std::endl;
             if(2 * ClientGui::mydel > ClientGui::del){
