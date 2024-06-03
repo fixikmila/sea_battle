@@ -13,6 +13,9 @@ private:
     mutable boost::mutex the_mutex;
     boost::condition_variable the_condition_variable;
 public:
+    int size(){
+        return the_queue.size();
+    }
     void push(Data const& data)
     {
         boost::mutex::scoped_lock lock(the_mutex);

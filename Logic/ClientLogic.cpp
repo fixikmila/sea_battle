@@ -1,7 +1,7 @@
 //
 // Created by milana on 15.04.24.
 //
-
+#include <bits/stdc++.h>
 #include "ClientLogic.h"
 #include <iostream>
 #include "../Gui/ClientGui.h"
@@ -90,18 +90,28 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                 srvaddr = msg->AddressFrom;
                 isSrvFound = true;
                 std::cout << "Server was found!" << std::endl;
+                std::mt19937 rng(rand_num);
+                for(int i = 0; i < 6; i++){
+                    for(int j = 0; j < 6; j++){
+                        for(int k = 0; k < 6; k++){
+                            ClientGui::type[i][j][k] = rng() % 6;
+                        }
+                    }
+                }
                 how_many = skolko();
+                std::cout<<"how_many: "<<how_many<<std::endl;
             }
                 break;
             case Messages::ClientDataPropagation:
             {
                 auto cd_msg = dynamic_cast<Messages::ClientDataPropagationMessage*>(msg);
                 if(cd_msg->Data[3] == 4){
-                    int ii = cd_msg->Data[0];
+                    /*int ii = cd_msg->Data[0];
                     int jj = cd_msg->Data[1];
                     int kk = cd_msg->Data[2];
                     int val = cd_msg->Data[4];
-                    ClientGui::type[ii][jj][kk] = val;
+                    ClientGui::type[ii][jj][kk] = val;*/
+                    rand_num = cd_msg->Data[0];
                     //std::cout<<ii<<" "<<jj<<" "<<kk<<" "<<val<<std::endl;
                 }
                 else if(cd_msg->Data[3] == 1) {

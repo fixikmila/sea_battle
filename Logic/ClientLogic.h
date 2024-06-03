@@ -22,6 +22,7 @@ private:
     std::pair<std::string, unsigned short> srvaddr;
 
 public:
+    int rand_num = 0;
     int how_many = 0;
     bool game_end = false;
     bool isSrvFound = false;

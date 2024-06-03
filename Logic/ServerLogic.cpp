@@ -25,15 +25,7 @@ bool ServerLogic::isGood()
 }
 int types[6][6][6];
 std::mt19937 rng(std::chrono::steady_clock().now().time_since_epoch().count());
-void generate(){
-    for(int i = 0; i < 6; i++){
-        for(int j = 0; j < 6; j++){
-            for(int k = 0; k < 6; k++){
-                types[i][j][k] = rng() % 6;
-            }
-        }
-    }
-}
+
 void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, boost::chrono::system_clock::time_point>& timestamps)
 {
     auto* msg = agent->getMessage();
@@ -71,7 +63,7 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                                 added_in_queue[u] = false;
                             alive[cd_msg->AddressFrom] = alive[u] = true;
                             //send maps here
-                                        generate();
+                                       /* generate();
                             for(int i = 0; i < 6; i++)
                                 for(int j = 0; j < 6; j++)
                                     for(int k = 0; k < 6; k++) {
@@ -88,7 +80,21 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                                                                                                                     4,static_cast<unsigned int>(types[i][j][k])});
                                         prop2->AddressTo = u;
                                         agent->sendMessage(prop2);
-                                    }
+                                    }*/
+                                       unsigned int num = rng();
+                            auto prop = new Messages::ClientDataPropagationMessage(cd_msg->AddressFrom,
+                                                                                   std::vector<GLuint>{num, 0,
+                                                                                                       0,
+                                                                                                       4});
+                            prop->AddressTo = cd_msg->AddressFrom;
+                            agent->sendMessage(prop);
+                            auto prop2 = new Messages::ClientDataPropagationMessage(u,
+                                                                                    std::vector<GLuint>{num,
+                                                                                                        0,
+                                                                                                        0,
+                                                                                                        4});
+                            prop2->AddressTo = u;
+                            agent->sendMessage(prop2);
                             auto answ = new Messages::HelloMessage(cd_msg->Id);
                             answ->AddressTo = cd_msg->AddressFrom;
                             agent->sendMessage(answ);
