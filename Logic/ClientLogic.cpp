@@ -30,13 +30,13 @@ std::vector<int> canIdel()
         {
             for(int q=0;q<6;q++)
             {
-                if(deleted[i][j][q]==0) {
+                if(!deleted[i][j][q]) {
                     int w = ClientGui::type[i][j][q];
                     int x = ClientGui::move[w][0], y = ClientGui::move[w][1], z = ClientGui::move[w][2];
                     int x1 = i + x, y1 = j + y, z1 = z + q;
                     int kot = 0;
                     while (x1 >= 0 && y1 >= 0 && z1 >= 0 && x1 < 6 && y1 < 6 && z1 < 6) {
-                        if (deleted[x1][y1][z1] != 2) {
+                        if (!deleted[x1][y1][z1]) {
                             kot = 1;
                         }
                         x1 += x;
@@ -60,7 +60,7 @@ int skolko()
     int ans=0;
     while (true)
     {
-        std::cout<<"a.size"<<a.size()<<std::endl;
+        //std::cout<<"a.size"<<a.size()<<std::endl;
         a=canIdel();
         if(a.size()==0)
         {
@@ -68,7 +68,7 @@ int skolko()
         }
         else
         {
-            deleted[a[0]][a[1]][a[2]] = 2;
+            deleted[a[0]][a[1]][a[2]] = true;
         }
         ans++;
     }
@@ -79,6 +79,7 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
 {
     Messages::Message* msg;
     msg = agent->getMessage();
+    //std::cout<<"dispatch "<<msg<<std::endl;
     if (msg)
     {
         switch (msg->Type)
@@ -101,6 +102,7 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                     int kk = cd_msg->Data[2];
                     int val = cd_msg->Data[4];
                     ClientGui::type[ii][jj][kk] = val;
+                    //std::cout<<ii<<" "<<jj<<" "<<kk<<" "<<val<<std::endl;
                 }
                 else if(cd_msg->Data[3] == 1) {
                    // std::cout<<"flag1"<<std::endl;

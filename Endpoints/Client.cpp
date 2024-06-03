@@ -67,6 +67,7 @@ int main()
             onesound = SoundEngine->play2D("../Src/bleep.mp3",false,false,true);
             onesound->setVolume(ClientGui::gamesound);
             //send
+            std::cout<<"deleted"<<" "<<ClientGui::mydel<<" "<<ClientGui::del<<" "<<client.how_many<<std::endl;
            // std::cout<<"lalal"<<std::endl;
             client.DispatchMessage(data,data_cubes, ClientGui::r, ClientGui::g, ClientGui::b,2);
         }
@@ -77,7 +78,7 @@ int main()
         }
         lastFrameTime = currentTime;
 
-        if(ClientGui::del!=0)std::cout<<"del"<<ClientGui::del<<std::endl;
+        //if(ClientGui::del!=0)std::cout<<"del"<<ClientGui::del<<std::endl;
         if(ClientGui::esc_waiting){
             ClientGui::esc_waiting = false;
             client.game_end = true;

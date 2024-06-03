@@ -176,7 +176,7 @@ void ClientGui::Init() {
             for(int q=0;q<6;q++)
             {
                 ClientGui::used[i][j][q]=0;
-                ClientGui::type[i][j][q]=4;
+                ClientGui::type[i][j][q]=0; ////
             }
         }
     }
@@ -1021,8 +1021,8 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
                             if(ClientGui::F==5)
                             {
                                 ClientGui::TextShader->use();
-                                std::string s1="DRAW";
-                                RenderText(*ClientGui::TextShader, s1,-0.4,-0.1,0.005, glm::vec3(1.0, 1.0f, 1.0f),1000);
+                                std::string s1="WIN";
+                                RenderText(*ClientGui::TextShader, s1,-0.3,-0.1,0.005, glm::vec3(1.0, 1.0f, 1.0f),1000);
 
                                 glFlush();
                                 glFinish();
