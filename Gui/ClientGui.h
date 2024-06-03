@@ -6,6 +6,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 // GLFW
+#include <bits/stdc++.h>
 #include <GLFW/glfw3.h>
 #include <map>
 #include <vector>
@@ -49,6 +50,9 @@ public:
     static float gamesound, musicsound;
     static bool esc_waiting;
     static int used[6][6][6],type[6][6][6],move[6][3];
+
+    static std::chrono::steady_clock::time_point begin;
+    static std::chrono::steady_clock::time_point end;
 private:
     static std::map<GLchar, Character> Characters;
     static std::map<float,int> MAP;

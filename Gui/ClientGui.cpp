@@ -6,6 +6,8 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+std::chrono::steady_clock::time_point ClientGui::begin = std::chrono::steady_clock::now();
+std::chrono::steady_clock::time_point ClientGui::end = std::chrono::steady_clock::now();
 bool ClientGui::esc_waiting = false;
 float ClientGui::gamesound = 0.5f;
 float ClientGui::musicsound = 0.5f;
@@ -736,8 +738,9 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ClientGui::flag == 0 && ClientGui::F==0) {
+        ClientGui::end = std::chrono::steady_clock::now();
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && ClientGui::flag == 0 && ClientGui::F==0 && std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() >400000) {
+            ClientGui::begin = ClientGui::end;
             ClientGui::flag = 1;
             glBindVertexArray(ClientGui::VAO);
             for (int i = 0; i < ClientGui::kuby.size(); i++) {
