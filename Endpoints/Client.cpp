@@ -56,9 +56,13 @@ int main()
         }
 
         ClientGui::was_deleted = 0;
-        client.DispatchMessage(data,data_cubes, ClientGui::x, ClientGui::y, ClientGui::z,1);
-
-        ClientGui::in_game = client.in_game;
+        client.DispatchMessage(data,data_cubes, ClientGui::x, ClientGui::y, ClientGui::z,1002);
+        if(ClientGui::lastFrame - ClientGui::lastSend> 1)
+        {
+            ClientGui::lastSend = ClientGui::lastFrame;
+            client.DispatchMessage(data, data_cubes, round(ClientGui::camera->Position.x)+100,round(ClientGui::camera->Position.y)+100,round(ClientGui::camera->Position.z)+100,1000);
+        }
+         ClientGui::in_game = client.in_game;
         //if(ClientGui::F != 3)std::cout<<"FF"<<ClientGui::F<<std::endl;
         ClientGui::DrawFrame(data,data_cubes);
         if (snd)
@@ -69,7 +73,7 @@ int main()
             //send
             std::cout<<"deleted"<<" "<<ClientGui::mydel<<" "<<ClientGui::del<<" "<<client.how_many<<std::endl;
            // std::cout<<"lalal"<<std::endl;
-            client.DispatchMessage(data,data_cubes, ClientGui::r, ClientGui::g, ClientGui::b,2);
+            client.DispatchMessage(data,data_cubes, ClientGui::r, ClientGui::g, ClientGui::b,ClientGui::mydel);
         }
         if(ClientGui::wrong){
             ClientGui::wrong = false;
@@ -87,8 +91,8 @@ int main()
             client.in_game = false;
             data_cubes.clear();
         }
-        if(client.in_game && ClientGui::del == std::min(20, client.how_many)){//game ended
-
+        if(client.in_game && ClientGui::del >= std::min(20, client.how_many)){//game ended
+            client.DispatchMessage(data, data_cubes,1,1,1,2000);
             std::cout<<"game ended"<<ClientGui::mydel<<" "<<ClientGui::del<<std::endl;
             if(2 * ClientGui::mydel > ClientGui::del){
                 std::cout<<"you won"<<std::endl;

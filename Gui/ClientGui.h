@@ -47,26 +47,31 @@ public:
     static int r,g,b,del,mydel;
     static int was_deleted;
     static bool wrong;
-    static float gamesound, musicsound;
+    static float gamesound, musicsound,dx,dy,dz;
     static bool esc_waiting;
     static int used[6][6][6],type[6][6][6],move[6][3];
 
     static std::chrono::steady_clock::time_point begin;
     static std::chrono::steady_clock::time_point end;
+    // Camera
+    static Camera* camera;
+
+    static GLfloat deltaTime ;
+    static GLfloat lastFrame ;
+    static GLfloat lastSend ;
+
 private:
     static std::map<GLchar, Character> Characters;
     static std::map<float,int> MAP;
     static std::map<int,float> ALP;
     static float ror[6][4],timedel[6][6][6];
     static GLuint screenWidth, screenHeight;
-// Camera
-    static Camera* camera;
+
     static bool keys[1024];
     static GLfloat lastX, lastY;
     static std::atomic<bool> firstMouse;
 
-    static GLfloat deltaTime ;
-    static GLfloat lastFrame ;
+
     // Window dimensions
     static int width, height;
     static GLFWwindow* window;
@@ -74,6 +79,8 @@ private:
     static GLuint texture1;
     static GLuint texture2;
     static GLuint texture3;
+    static GLuint texture4;
+    static GLuint texture5;
 
     static std::vector<GLfloat> grom;
     static std::vector<std::pair<GLfloat,GLfloat > > strelki,tigi;
@@ -83,6 +90,8 @@ private:
     static Shader* ourShader;
     static Shader* KnopkiShader;
     static Shader* TextShader;
+    static Shader* TShader;
+    static Shader* SpecShader;
 };
 
 

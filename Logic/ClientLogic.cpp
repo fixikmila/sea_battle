@@ -75,7 +75,8 @@ int skolko()
     return ans;
 
 }
-void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>>&data,std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>>&data_cubes, GLuint x, GLuint y, GLuint z,int flag)
+void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short>,
+        std::vector<GLuint>>&data,std::map<std::pair<std::string, unsigned short>, std::vector<GLuint>>&data_cubes, GLuint x, GLuint y, GLuint z,int flag)
 {
     Messages::Message* msg;
     msg = agent->getMessage();
@@ -105,7 +106,7 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
             case Messages::ClientDataPropagation:
             {
                 auto cd_msg = dynamic_cast<Messages::ClientDataPropagationMessage*>(msg);
-                if(cd_msg->Data[3] == 4){
+                if(cd_msg->Data[3] == 1001){
                     /*int ii = cd_msg->Data[0];
                     int jj = cd_msg->Data[1];
                     int kk = cd_msg->Data[2];
@@ -113,12 +114,6 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                     ClientGui::type[ii][jj][kk] = val;*/
                     rand_num = cd_msg->Data[0];
                     //std::cout<<ii<<" "<<jj<<" "<<kk<<" "<<val<<std::endl;
-                }
-                else if(cd_msg->Data[3] == 1) {
-                   // std::cout<<"flag1"<<std::endl;
-                    data.erase(cd_msg->Id);
-                    data.insert(std::pair<std::pair<std::string, unsigned short>, std::vector<GLuint>>(cd_msg->Id,
-                                                                                                       cd_msg->Data));
                 } else{
                     //std::cout<<"flag2"<<std::endl;
                     data_cubes.erase(cd_msg->Id);
@@ -157,10 +152,11 @@ void ClientLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
     }
     if (isSrvFound)
     {
-        if(flag == 1)return;
+        if(flag == 1002)return;
         auto d_msg = new Messages::ClientDataMessage(std::vector<GLuint>{x, y, z, static_cast<unsigned int>(flag)});
         d_msg->AddressTo = srvaddr;
         agent->sendMessage(d_msg);
+
     }
     else if(ClientGui::F == 3)
     {

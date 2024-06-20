@@ -85,14 +85,14 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
                             auto prop = new Messages::ClientDataPropagationMessage(cd_msg->AddressFrom,
                                                                                    std::vector<GLuint>{num, 0,
                                                                                                        0,
-                                                                                                       4});
+                                                                                                       1001});
                             prop->AddressTo = cd_msg->AddressFrom;
                             agent->sendMessage(prop);
                             auto prop2 = new Messages::ClientDataPropagationMessage(u,
                                                                                     std::vector<GLuint>{num,
                                                                                                         0,
                                                                                                         0,
-                                                                                                        4});
+                                                                                                        1001});
                             prop2->AddressTo = u;
                             agent->sendMessage(prop2);
                             auto answ = new Messages::HelloMessage(cd_msg->Id);
@@ -153,6 +153,8 @@ void ServerLogic::DispatchMessage(std::map<std::pair<std::string, unsigned short
     for (const auto& key : keysToErase)
     {
         timestamps.erase(key);
+        if(q.contains(key))q.erase(key);
+        added_in_queue[key] = alive[key] = false;
     }
 
     // send cleanup messages

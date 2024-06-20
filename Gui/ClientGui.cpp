@@ -11,6 +11,10 @@ std::chrono::steady_clock::time_point ClientGui::end = std::chrono::steady_clock
 bool ClientGui::esc_waiting = false;
 float ClientGui::gamesound = 0.5f;
 float ClientGui::musicsound = 0.5f;
+float ClientGui::dx = 3;
+float ClientGui::dy= 3;
+float ClientGui::dz = 3;
+
 bool ClientGui::wrong = false;
 bool ClientGui::in_game = false;
 GLuint ClientGui::x = 5;
@@ -37,6 +41,7 @@ Camera* ClientGui::camera = nullptr;
 GLFWwindow* ClientGui::window = nullptr;
 GLfloat ClientGui::deltaTime = {};
 GLfloat ClientGui::lastFrame = {};
+GLfloat ClientGui::lastSend = 0;
 GLuint ClientGui::VAO = {};
 GLuint ClientGui::VBO = {};
 GLuint ClientGui::VAO1 = {};
@@ -58,9 +63,14 @@ std::vector<GLfloat> ClientGui::grom={};
 Shader* ClientGui::ourShader = nullptr;
 Shader* ClientGui::KnopkiShader = nullptr;
 Shader* ClientGui::TextShader = nullptr;
+Shader* ClientGui::TShader = nullptr;
+Shader* ClientGui::SpecShader = nullptr;
+
 GLuint ClientGui::texture1 = {};
 GLuint ClientGui::texture2 = {};
 GLuint ClientGui::texture3 = {};
+GLuint ClientGui::texture4 = {};
+GLuint ClientGui::texture5 = {};
 
 int ClientGui::used[6][6][6] = {{0,0,0},{0,0,0},{0,0,0}};
 int ClientGui::type[6][6][6] = {{0,0,0},{0,0,0},{0,0,0}};
@@ -77,6 +87,7 @@ void ClientGui::RenderText(Shader &shader, std::string text, float x, float y, f
 {
     // activate corresponding render state
 
+
     float start=x;
     shader.use();
     //std::cout<<shader.ID<<std::endl;
@@ -86,6 +97,8 @@ void ClientGui::RenderText(Shader &shader, std::string text, float x, float y, f
 
     // iterate through all characters
     std::string::const_iterator c;
+    float first[6][4],last[6][4];
+    int Fl=0;
     for (c = text.begin(); c != text.end(); c++)
     {
         Character ch = Characters[*c];
@@ -109,12 +122,48 @@ void ClientGui::RenderText(Shader &shader, std::string text, float x, float y, f
                 { xpos + w, ypos + h,   1.0f, 0.0f }
         };
 
+        for(int hh=0;hh<6;hh++)
+        {
+            for(int kk=0;kk<4;kk++)
+            {
+                last[hh][kk]=byk[hh][kk];
+            }
+        }
 
+        if(Fl==0)
+        {
+            for(int hh=0;hh<6;hh++)
+            {
+                for(int kk=0;kk<4;kk++)
+                {
+                    first[hh][kk]=byk[hh][kk];
+                }
+            }
+        }
+        Fl=1;
         // render glyph texture over quad
         //std::cout<<ch.TextureID<<std::endl;
 
         //ch.TextureID
-        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+
+        if(F==0)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture5);
+            glUniform1i(glGetUniformLocation(shader.ID, "text"), 0);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+            glUniform1i(glGetUniformLocation(shader.ID, "T"), 1);
+
+        }
+        else
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+            glUniform1i(glGetUniformLocation(shader.ID, "text"), 0);
+        }
+
         // update content of VBO memory
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(byk), byk); // be sure to use glBufferSubData and not glBufferData
@@ -130,6 +179,57 @@ void ClientGui::RenderText(Shader &shader, std::string text, float x, float y, f
             y-=0.2;
         }
     }
+
+    if(F==0)
+    {
+        SpecShader->use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture5);
+        glUniform1i(glGetUniformLocation(shader.ID, "text"), 0);
+
+        float dno=std::min(first[0][1],last[0][1])-0.06;
+        float verh=std::max(first[4][1],last[4][1])+0.06;
+        float levo=std::min(first[0][0],last[0][0]);
+        float pravo=std::max(first[4][0],last[4][0]);
+
+        first[0][0]=levo;
+        first[0][1]=dno;
+
+        first[1][0]=pravo;
+        first[1][1]=dno;
+
+        first[2][0]=pravo;
+        first[2][1]=verh;
+
+        first[3][0]=levo;
+        first[3][1]=dno;
+
+        first[4][0]=pravo;
+        first[4][1]=verh;
+
+        first[5][0]=levo;
+        first[5][1]=verh;
+
+        for(int kk=0;kk<6;kk++)
+        {
+            if(first[kk][2]==1)
+            {
+                first[kk][2]=1;
+            }
+            if(first[kk][3]==1)
+            {
+                first[kk][3]=10;
+            }
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(first), first);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    }
+
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -253,7 +353,9 @@ void ClientGui::Init() {
     // Build and compile our shader program
     ClientGui::ourShader = new Shader("../Graphics/v1.txt","../Graphics/f1.txt");
     ClientGui::KnopkiShader = new Shader("../Graphics/v2.txt","../Graphics/f2.txt");
-    ClientGui::TextShader = new Shader("../Graphics/Vtext.txt","../Graphics/Ftext.txt");
+    ClientGui::TShader = new Shader("../Graphics/Vtext.txt","../Graphics/Ftext.txt");
+    ClientGui::TextShader = new Shader("../Graphics/vtt.txt","../Graphics/ftt.txt");
+    ClientGui::SpecShader = new Shader("../Graphics/vtt.txt","../Graphics/vspec.txt");
     //std::cout<<"textID="<<TextShader->ID<<std::endl;
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat V[]={
@@ -541,6 +643,39 @@ void ClientGui::Init() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
 
+    // --== TEXTURE 4 == --
+    glGenTextures(1, &ClientGui::texture4);
+    glBindTexture(GL_TEXTURE_2D, ClientGui::texture4);
+    // Set our texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // Load, create texture and generate mipmaps
+    image = SOIL_load_image("../Src/Ha.png", &ClientGui::width, &ClientGui::height, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ClientGui::width, ClientGui::height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+    // --== TEXTURE 5 == --
+    glGenTextures(1, &ClientGui::texture5);
+    glBindTexture(GL_TEXTURE_2D, ClientGui::texture5);
+    // Set our texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // Load, create texture and generate mipmaps
+    image = SOIL_load_image("../Src/Doroga.png", &ClientGui::width, &ClientGui::height, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ClientGui::width, ClientGui::height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     for(int i=0;i<6;i++)
     {
         for(int j=0;j<6;j++)
@@ -616,19 +751,46 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
 
     //tut bula textura
     for (auto &[key, value]: data_cubes) {
-        if (value[3] == 2 && ClientGui::used[value[0]][value[1]][value[2]] != 1) {
+        if (ClientGui::used[value[0]][value[1]][value[2]] != 1 && value[3] < 1000) {
             if(ClientGui::used[value[0]][value[1]][value[2]]!=2)
             {
                 ClientGui::used[value[0]][value[1]][value[2]] = 2;
-                del++;
+                del=mydel+value[3];
                 //data_cubes.erase(key);
             }
 
         }
 
+        if(value[3] == 2000)
+        {
+            std::cout<<"konec"<<std::endl;
+            ClientGui::del = 20;
+        }
+
+        if(value[3] == 1000)
+        {
+            dx=value[0];
+            dx-=100;
+            dy=value[1];
+            dy-=100;
+            dz=value[2];
+            dz-=100;
+        }
+
     }
 
     if (F == 0) {
+
+
+        //ClientGui::TShader->use();
+        //ClientGui::TextShader->use();
+        std::string v1,v2;
+        v1="your points ";
+        v2="opponent's points ";
+        v1+=std::to_string(mydel);
+        v2+=std::to_string(del-mydel);
+        RenderText(*ClientGui::TShader, v1,-1,0.8,0.0015, glm::vec3(1, 1, 1),1000);
+        RenderText(*ClientGui::TShader, v2,-1,0.6,0.0015, glm::vec3(1, 1, 1),1000);
         glDisable(GL_CULL_FACE);
         ClientGui::ourShader->use();
         glm::mat4 view = E();
@@ -672,6 +834,17 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         glBindVertexArray(ClientGui::VAONORM);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, ClientGui::texture2);
+        glUniform1i(glGetUniformLocation(ClientGui::ourShader->ID, "ourTexture1"), 2);
+        glUniform3f(glGetUniformLocation(ClientGui::ourShader->ID, "ind"), 1, 1, 1);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        model = E();
+        model = glm::translate(model,glm::vec3(dx,dy,dz));
+        model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glBindVertexArray(ClientGui::VAONORM);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, ClientGui::texture4);
         glUniform1i(glGetUniformLocation(ClientGui::ourShader->ID, "ourTexture1"), 2);
         glUniform3f(glGetUniformLocation(ClientGui::ourShader->ID, "ind"), 1, 1, 1);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -821,6 +994,8 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE && flag == 1 && ClientGui::F==0) {
             ClientGui::flag = 0;
         }
+
+        //SEND(camera->Position.x,camera->Position.y,camera->Position.z,10);
     }
     else
     {
@@ -1381,4 +1556,6 @@ void ClientGui::Do_Movement()
         ClientGui::camera->ProcessKeyboard(LEFT, ClientGui::deltaTime);
     if(ClientGui::keys[GLFW_KEY_D])
         ClientGui::camera->ProcessKeyboard(RIGHT, ClientGui::deltaTime);
+    if(ClientGui::keys[GLFW_KEY_SPACE])
+        ClientGui::camera->ProcessKeyboard(SPACE, ClientGui::deltaTime);
 }
