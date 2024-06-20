@@ -761,7 +761,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
 
         }
 
-        if(value[3] == 2000)
+        if(value[3] == 2000 && del > 5)
         {
             std::cout<<"konec"<<std::endl;
             ClientGui::del = 20;
