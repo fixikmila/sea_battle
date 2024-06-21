@@ -252,6 +252,7 @@ void ClientGui::reset() {
     was_deleted=0;
 }
 void ClientGui::Init() {
+    del = mydel = 0;
     ror[1][0]=p;
     ror[2][0]=p/2;
     ror[3][0]=3*p/2;
@@ -755,16 +756,17 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
             if(ClientGui::used[value[0]][value[1]][value[2]]!=2)
             {
                 ClientGui::used[value[0]][value[1]][value[2]] = 2;
-                del=mydel+value[3];
+
                 //data_cubes.erase(key);
             }
-
+            del=mydel+value[3];
         }
 
-        if(value[3] == 2000 && del > 5)
+        if(value[3] == 2000 && del > 10)
         {
             std::cout<<"konec"<<std::endl;
             ClientGui::del = 20;
+            value[3]=3000;
         }
 
         if(value[3] == 1000)
