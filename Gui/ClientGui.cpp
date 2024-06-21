@@ -778,6 +778,7 @@ void ClientGui::DrawFrame(std::map<std::pair<std::string, unsigned short>, std::
         }
 
     }
+    data_cubes.clear();
 
     if (F == 0) {
 
